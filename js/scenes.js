@@ -478,6 +478,13 @@
          <circle cx="425" cy="205" r="4" fill="${C.cyanD}"/>
          <path d="M500 150 L430 200" stroke="${C.metal}" stroke-width="6" stroke-linecap="round"/>`,
         430, 340, 'middle')}
+
+      <!-- 메모리 계층: 빠르고 작음 ↔ 크고 느림 -->
+      <text x="300" y="372" text-anchor="middle" class="s-label" fill="${C.fnt}">메모리 계층 — 저장장치는 가장 크고 가장 느린 맨 아래층</text>
+      ${[['레지스터', 60, 70, C.gold], ['캐시', 136, 84, C.gold], ['RAM', 226, 100, C.cyan], ['SSD', 332, 100, C.grn], ['HDD', 438, 102, C.grn]].map(([t, x, w, col], i) => `
+        <rect x="${x}" y="382" width="${w}" height="26" rx="4" fill="${C.pan2}" stroke="${col}" opacity="${1 - i * 0.08}"/>
+        <text x="${x + w / 2}" y="399" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${col}">${t}</text>
+        ${i < 4 ? `<text x="${x + w + 4}" y="399" font-family="monospace" font-size="8" fill="${C.fnt}">›</text>` : ''}`).join('')}
     `),
 
     /* ─── RAM: 셀로 분기 ─── */

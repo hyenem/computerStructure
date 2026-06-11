@@ -452,15 +452,28 @@ const LABS = {
     render();
   },
 
-  /* ── 파이프라인: 사이클을 한 박자씩 진행 ── */
+  /* ── 파이프라인: 순조로운 흐름 vs 해저드(스톨) 체험 ── */
   pipeline(el) {
     const ST = ['IF', 'ID', 'EX', 'MEM', 'WB'];
-    const N = 3; // 명령 수
-    const LAST = N - 1 + ST.length - 1; // 마지막 사이클 번호
+    const N = 3;
+    let mode = 'smooth'; // smooth | hazard
     let cycle = -1;
+
+    // 칸(i,j)이 활성화되는 사이클. 해저드 모드: 명령2가 명령1 결과에 의존 → EX 앞 2버블, 명령3도 밀림
+    const at = (i, j) => {
+      if (mode === 'smooth') return i + j;
+      if (i === 0) return j;
+      if (i === 1) return j < 2 ? 1 + j : 1 + j + 2;
+      return 2 + j + 2;
+    };
+    const last = () => at(N - 1, ST.length - 1);
 
     el.innerHTML = `
       <div class="lab lab--pipe">
+        <div class="lab__tabs">
+          <button class="lab__tab" data-m="smooth">순조로움</button>
+          <button class="lab__tab" data-m="hazard">해저드 발생</button>
+        </div>
         <div class="pipe-top">
           <span class="pipe-cycle">시작 전</span>
           <button class="pipe-next">▸ 다음 박자</button>
@@ -471,41 +484,54 @@ const LABS = {
             ${Array.from({ length: N }, (_, i) => `<tr><td class="pipe-name">명령${i + 1}</td>${ST.map((_, j) => `<td class="pipe-cell" data-i="${i}" data-j="${j}"></td>`).join('')}</tr>`).join('')}
           </tbody>
         </table>
-        <p class="lab__caption">순차 실행이면 3×5 = <b>15박자</b>. 파이프라인은 몇 박자에 끝날까요?</p>
+        <p class="lab__caption"></p>
       </div>`;
 
     const cyc = el.querySelector('.pipe-cycle');
     const btn = el.querySelector('.pipe-next');
     const cap = el.querySelector('.lab__caption');
     const cells = el.querySelectorAll('.pipe-cell');
+    const tabs = el.querySelectorAll('.lab__tab');
+    const intro = () => mode === 'smooth'
+      ? '순차 실행이면 3×5 = <b>15박자</b>. 파이프라인은 몇 박자에 끝날까요?'
+      : '<b>명령2가 명령1의 결과를 씁니다</b>(데이터 해저드). 라인이 어떻게 꼬일까요?';
 
     function render() {
       const live = [];
+      const L = last();
       cells.forEach((c) => {
         const i = +c.dataset.i, j = +c.dataset.j;
-        const at = i + j; // 이 칸이 활성인 사이클
-        c.classList.toggle('pipe-cell--on', cycle === at);
-        c.classList.toggle('pipe-cell--done', cycle > at);
-        c.textContent = cycle >= at ? ST[j] : '';
-        if (cycle === at) live.push(`명령${i + 1}=${ST[j]}`);
+        const t = at(i, j);
+        const stallNow = mode === 'hazard' && i === 1 && j === 2 && (cycle === 3 || cycle === 4);
+        c.classList.toggle('pipe-cell--on', cycle === t);
+        c.classList.toggle('pipe-cell--done', cycle > t);
+        c.classList.toggle('pipe-cell--stall', stallNow);
+        c.textContent = stallNow ? '●' : (cycle >= t ? ST[j] : '');
+        if (cycle === t) live.push(`명령${i + 1}=${ST[j]}`);
       });
       if (cycle < 0) {
-        cyc.textContent = '시작 전';
-        btn.textContent = '▸ 다음 박자';
-      } else if (cycle >= LAST) {
-        cyc.textContent = `사이클 ${cycle + 1} — 완료!`;
-        btn.textContent = '↻ 처음부터';
-        cap.innerHTML = `명령 3개가 단 <b>${LAST + 1}박자</b>에 끝! (순차였다면 15박자) — 겹침의 힘입니다.`;
+        cyc.textContent = '시작 전'; btn.textContent = '▸ 다음 박자';
+        cap.innerHTML = intro();
+      } else if (cycle >= L) {
+        cyc.textContent = `사이클 ${cycle + 1} — 완료!`; btn.textContent = '↻ 처음부터';
+        cap.innerHTML = mode === 'smooth'
+          ? `명령 3개가 단 <b>${L + 1}박자</b>에 끝! (순차였다면 15박자) — 겹침의 힘입니다.`
+          : `버블 2개 때문에 <b>${L + 1}박자</b> (순조로우면 7박자) — 이 손해를 줄이는 게 <b>포워딩</b>입니다.`;
       } else {
-        cyc.textContent = `사이클 ${cycle + 1}`;
-        cap.innerHTML = live.join(' · ') + ' — <b>같은 박자에 동시!</b>';
+        cyc.textContent = `사이클 ${cycle + 1}`; btn.textContent = '▸ 다음 박자';
+        const stalling = mode === 'hazard' && (cycle === 3 || cycle === 4);
+        cap.innerHTML = stalling
+          ? '<b>● 버블!</b> 명령2가 명령1의 결과(WB)를 기다리며 멈춰 있습니다'
+          : live.join(' · ') + ' — <b>같은 박자에 동시!</b>';
       }
     }
-    btn.addEventListener('click', () => {
-      cycle = cycle >= LAST ? -1 : cycle + 1;
-      if (cycle < 0) cap.innerHTML = '순차 실행이면 3×5 = <b>15박자</b>. 파이프라인은 몇 박자에 끝날까요?';
+    tabs.forEach(t => t.addEventListener('click', () => {
+      mode = t.dataset.m; cycle = -1;
+      tabs.forEach(x => x.classList.toggle('lab__tab--on', x === t));
       render();
-    });
+    }));
+    btn.addEventListener('click', () => { cycle = cycle >= last() ? -1 : cycle + 1; render(); });
+    tabs[0].classList.add('lab__tab--on');
     render();
   },
 
@@ -565,6 +591,112 @@ const LABS = {
     }
     el.querySelectorAll('.vm-page').forEach(b => b.addEventListener('click', () => access(b.dataset.p, b)));
     paintFrames(-1);
+  },
+
+  /* ── 클럭 주기: GHz를 올리면 한 박자에 빛이 가는 거리 ── */
+  hz(el) {
+    el.innerHTML = `
+      <div class="lab lab--hz">
+        <label class="tr-control"><span>클럭</span>
+          <input type="range" min="5" max="60" value="30" class="tr-slider"/>
+          <span class="tr-volt hz-f">3.0GHz</span></label>
+        <div class="hz-rows">
+          <div class="key-row"><span>한 박자(주기 T = 1/f)</span><b class="hz-t">—</b></div>
+          <div class="key-row"><span>그동안 빛이 가는 거리</span><b class="hz-d">—</b></div>
+        </div>
+        <div class="hz-ruler"><div class="hz-ruler__light"></div><span class="hz-ruler__mark">30cm 자</span></div>
+        <p class="lab__caption"></p>
+      </div>`;
+    const slider = el.querySelector('.tr-slider');
+    const fEl = el.querySelector('.hz-f'), tEl = el.querySelector('.hz-t'), dEl = el.querySelector('.hz-d');
+    const light = el.querySelector('.hz-ruler__light');
+    const cap = el.querySelector('.lab__caption');
+    function render() {
+      const f = +slider.value / 10;          // GHz
+      const T = 1 / f;                       // ns
+      const d = 30 * T;                      // cm (빛 ≈ 30cm/ns)
+      fEl.textContent = f.toFixed(1) + 'GHz';
+      tEl.textContent = T.toFixed(2) + ' ns';
+      dEl.textContent = d.toFixed(1) + ' cm';
+      light.style.width = Math.min(100, d / 30 * 100) + '%';
+      cap.innerHTML = d < 10
+        ? `한 박자에 <b>빛조차 ${d.toFixed(1)}cm</b> — 칩 안 배선 길이가 설계 한계가 되는 이유입니다.`
+        : `1초에 ${ (f * 10).toFixed(0) }억 박자 — 그 한 박자 동안 빛은 자(30cm)의 ${Math.round(d / 30 * 100)}%만 갑니다.`;
+    }
+    slider.addEventListener('input', render);
+    render();
+  },
+
+  /* ── 캡슐화: 데이터에 봉투를 한 겹씩 ── */
+  wrap(el) {
+    const STAGES = [
+      ['데이터', '보낼 내용 그 자체 — "안녕!"'],
+      ['+ TCP', '포트·순서번호를 붙임 — "몇 번째 조각, 어느 프로그램?"'],
+      ['+ IP', '목적지 컴퓨터 주소를 붙임 — "어느 집으로?"'],
+      ['+ 이더넷', '바로 다음 장비의 MAC을 붙임 — "일단 옆 라우터로!"'],
+      ['직렬화 ⚡', '전부 비트가 되어 전선으로 — 01001000 01101001…'],
+    ];
+    let s = 0;
+    el.innerHTML = `
+      <div class="lab lab--wrap">
+        <div class="wrap-view">
+          <span class="wrap-box wrap-box--eth">이더넷<span class="wrap-box wrap-box--ip">IP<span class="wrap-box wrap-box--tcp">TCP<span class="wrap-box wrap-box--data">"안녕!"</span></span></span></span>
+        </div>
+        <div class="wrap-bits">01001000 01101001 01000101…</div>
+        <button class="fdx-next boot-next wrap-next">▸ 포장하기</button>
+        <p class="lab__caption"></p>
+      </div>`;
+    const view = el.querySelector('.wrap-view');
+    const bits = el.querySelector('.wrap-bits');
+    const btn = el.querySelector('.wrap-next');
+    const cap = el.querySelector('.lab__caption');
+    function render() {
+      view.dataset.s = s;
+      bits.classList.toggle('wrap-bits--on', s === 4);
+      btn.textContent = s >= STAGES.length - 1 ? '↻ 처음부터' : (s === 3 ? '▸ 전선으로!' : '▸ 포장하기');
+      cap.innerHTML = `<b>${STAGES[s][0]}</b> — ${STAGES[s][1]}`;
+    }
+    btn.addEventListener('click', () => { s = s >= STAGES.length - 1 ? 0 : s + 1; render(); });
+    render();
+  },
+
+  /* ── 전하 누설: 방치하면 비트가 사라진다 → 리프레시 ── */
+  leak(el) {
+    let charge = 100, refreshes = 0, lost = false;
+    el.innerHTML = `
+      <div class="lab lab--leak">
+        <div class="leak-view">
+          <div class="leak-cap"><div class="leak-fill"></div></div>
+          <div class="leak-bit">읽히는 값 <b class="leak-v">1</b></div>
+        </div>
+        <button class="fdx-next boot-next leak-btn">⟳ 리프레시 (다시 충전)</button>
+        <p class="lab__caption">축전기의 전하는 가만히 둬도 샙니다 — 지켜보세요.</p>
+      </div>`;
+    const fill = el.querySelector('.leak-fill');
+    const v = el.querySelector('.leak-v');
+    const cap = el.querySelector('.lab__caption');
+    const btn = el.querySelector('.leak-btn');
+    function paint() {
+      fill.style.height = charge + '%';
+      const bit = charge > 40 ? 1 : 0;
+      v.textContent = bit;
+      v.className = 'leak-v ' + (bit ? 'one' : 'zero');
+      if (bit === 0 && !lost) {
+        lost = true;
+        cap.innerHTML = '⚠ <b>비트 소실!</b> 전하가 문턱 아래로 — 1이 0으로 읽힙니다. 리프레시가 없으면 메모리는 잊습니다.';
+      }
+    }
+    const timer = setInterval(() => {
+      if (!el.isConnected) { clearInterval(timer); return; } // 패널 떠나면 정리
+      charge = Math.max(0, charge - 1.6);
+      paint();
+    }, 120);
+    btn.addEventListener('click', () => {
+      charge = 100; lost = false; refreshes++;
+      cap.innerHTML = `⟳ 재충전! (${refreshes}회) — 실제 DRAM은 이걸 <b>1초에 수십 번, 모든 셀에</b> 자동으로 합니다.`;
+      paint();
+    });
+    paint();
   },
 
   /* ── 키보드 인터럽트: 진짜 키를 눌러 신호의 여정을 본다 ── */
