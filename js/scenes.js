@@ -50,56 +50,68 @@
     }
     return s;
   }
+  // 헤더(제목 strip) 달린 클릭 가능한 부품 패널
+  function bay(kid, label, x, y, w, h, art, opts) {
+    opts = opts || {};
+    const fill = opts.fill || C.pan2;
+    const accent = opts.accent || C.cyanD;
+    const body = `
+      <rect class="hot__shape" x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${fill}" stroke="${C.ln2}" stroke-width="1.5"/>
+      <rect x="${x}" y="${y}" width="5" height="${h}" rx="2.5" fill="${accent}" opacity=".7"/>
+      <line x1="${x + 5}" y1="${y + 26}" x2="${x + w}" y2="${y + 26}" stroke="${C.ln}" stroke-width="1"/>
+      ${art}`;
+    return hot(kid, label, body, x + 16, y + 18);
+  }
 
   const SCENES = {
 
-    /* ─── L0 본체: 케이스 내부 배치도 ─── */
+    /* ─── L0 본체: 케이스 내부 배치도 (겹침 없는 6개 패널) ─── */
     case: svg(`
       <rect x="14" y="14" width="572" height="392" rx="12" fill="${C.pan}" stroke="${C.ln2}" stroke-width="1.5"/>
       <rect x="22" y="22" width="556" height="376" rx="8" fill="none" stroke="${C.ln}" stroke-dasharray="3 5"/>
-      ${lbl(30, 38, 'CASE · 측면 개방도')}
+      ${lbl(30, 40, 'CASE · 내부 구성')}
 
-      ${hot('motherboard', '메인보드',
-        `<rect class="hot__shape" x="250" y="58" width="316" height="312" rx="6" fill="${C.pcb}" stroke="${C.pcbL}" stroke-width="1.5"/>
-         <path d="M268 90 H520 M268 120 H470 M268 340 H520" stroke="${C.pcbL}" stroke-width="1" opacity=".4" fill="none"/>`,
-        262, 360)}
+      ${bay('motherboard', '메인보드', 250, 56, 312, 210,
+        `<path d="M270 120 H540 M270 150 H470 M270 250 H540" stroke="${C.pcbL}" stroke-width="1" opacity=".5" fill="none"/>
+         <rect x="300" y="104" width="84" height="84" rx="3" fill="${C.metal}" stroke="${C.ln2}"/>
+         ${pins(312, 116, 7, 7, 11, C.cyanD)}
+         <text x="342" y="206" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">CPU 소켓</text>
+         <rect x="430" y="104" width="112" height="9" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <rect x="430" y="120" width="112" height="9" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <rect x="430" y="136" width="112" height="9" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <rect x="430" y="152" width="112" height="9" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <text x="486" y="178" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">RAM 슬롯</text>`,
+        { fill: C.pcb, accent: C.pcbL })}
 
-      ${hot('io', '입출력 포트',
-        `<rect class="hot__shape" x="256" y="66" width="40" height="150" rx="3" fill="${C.metal}" stroke="${C.ln2}"/>
-         <rect x="263" y="76" width="26" height="14" rx="2" fill="${C.pan2}"/>
-         <rect x="263" y="98" width="26" height="14" rx="2" fill="${C.pan2}"/>
-         <circle cx="276" cy="130" r="9" fill="${C.pan2}"/>
-         <rect x="263" y="150" width="26" height="10" rx="2" fill="${C.pan2}"/>
-         <rect x="263" y="168" width="26" height="10" rx="2" fill="${C.pan2}"/>`,
-        252, 232, 'start')}
+      ${bay('cooler', '냉각 시스템', 250, 280, 150, 104,
+        `${fins(262, 312, 126, 50, 9, C.pan)}
+         <circle cx="325" cy="345" r="26" fill="${C.pan}" stroke="${C.cyanD}"/>
+         <path d="M325 345 L325 322 M325 345 L345 357 M325 345 L305 357" stroke="${C.cyanD}" stroke-width="2.5"/>`)}
 
-      ${hot('cooler', '냉각',
-        `<rect class="hot__shape" x="360" y="100" width="120" height="120" rx="6" fill="${C.metal}" stroke="${C.ln2}"/>
-         ${fins(366, 106, 108, 108, 10, C.pan2)}
-         <circle cx="420" cy="160" r="34" fill="${C.pan}" stroke="${C.cyanD}"/>
-         <path d="M420 160 L420 130 M420 160 L446 174 M420 160 L394 174" stroke="${C.cyanD}" stroke-width="3"/>`,
-        420, 240, 'middle')}
+      ${bay('gpu', '그래픽카드', 412, 280, 150, 104,
+        `<rect x="426" y="312" width="122" height="58" rx="4" fill="#12202c" stroke="${C.cyanD}"/>
+         <circle cx="457" cy="341" r="17" fill="${C.pan}" stroke="${C.cyanD}"/>
+         <circle cx="457" cy="341" r="4" fill="${C.cyanD}"/>
+         <circle cx="513" cy="341" r="17" fill="${C.pan}" stroke="${C.cyanD}"/>
+         <circle cx="513" cy="341" r="4" fill="${C.cyanD}"/>`)}
 
-      ${hot('gpu', '그래픽카드',
-        `<rect class="hot__shape" x="258" y="290" width="280" height="74" rx="5" fill="#12202c" stroke="${C.cyanD}" stroke-width="1.5"/>
-         <circle cx="320" cy="327" r="24" fill="${C.pan}" stroke="${C.cyanD}"/>
-         <circle cx="320" cy="327" r="6" fill="${C.cyanD}"/>
-         <circle cx="430" cy="327" r="24" fill="${C.pan}" stroke="${C.cyanD}"/>
-         <circle cx="430" cy="327" r="6" fill="${C.cyanD}"/>`,
-        470, 327, 'start')}
+      ${bay('storage', '저장장치', 38, 56, 188, 116,
+        `<rect x="52" y="92" width="160" height="30" rx="3" fill="#13202b" stroke="${C.ln2}"/>
+         <rect x="52" y="128" width="160" height="30" rx="3" fill="#13202b" stroke="${C.ln2}"/>
+         <circle cx="200" cy="107" r="3" fill="${C.cyanD}"/>
+         <circle cx="200" cy="143" r="3" fill="${C.cyanD}"/>`)}
 
-      ${hot('storage', '저장장치',
-        `<rect class="hot__shape" x="40" y="58" width="178" height="120" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
-         <rect x="50" y="68" width="158" height="30" rx="3" fill="#13202b" stroke="${C.ln2}"/>
-         <rect x="50" y="103" width="158" height="30" rx="3" fill="#13202b" stroke="${C.ln2}"/>
-         <rect x="50" y="138" width="158" height="30" rx="3" fill="#13202b" stroke="${C.ln2}"/>`,
-        44, 50)}
+      ${bay('io', '입출력 포트', 38, 184, 188, 78,
+        `<rect x="54" y="220" width="30" height="14" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <rect x="92" y="220" width="30" height="14" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>
+         <circle cx="146" cy="227" r="9" fill="${C.pan}" stroke="${C.ln2}"/>
+         <rect x="166" y="220" width="44" height="14" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>`)}
 
-      ${hot('psu', '전원공급',
-        `<rect class="hot__shape" x="40" y="262" width="178" height="108" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
-         <circle cx="129" cy="316" r="40" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>
-         <path d="M129 276 V356 M89 316 H169 M101 288 L157 344 M157 288 L101 344" stroke="${C.goldD}" stroke-width="1" opacity=".6"/>`,
-        44, 254)}
+      ${bay('psu', '전원공급장치', 38, 280, 188, 104,
+        `<rect x="56" y="312" width="152" height="58" rx="4" fill="#13202b" stroke="${C.ln2}"/>
+         <circle cx="132" cy="341" r="24" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>
+         <path d="M132 317 V365 M108 341 H156 M115 324 L149 358 M149 324 L115 358" stroke="${C.goldD}" stroke-width="1" opacity=".6"/>`,
+        { accent: C.goldD })}
     `),
 
     /* ─── L1 메인보드: PCB 탑뷰 ─── */
