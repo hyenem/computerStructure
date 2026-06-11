@@ -749,6 +749,49 @@ body::before {
 .vm-disk__light { color: var(--zero); transition: color .2s; }
 .vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
 
+/* NAND 조립 랩 */
+.nnd-in { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.nnd-lbl { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+.nnd-stages { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.nnd-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.nnd-arrow { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+.nnd-chip {
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 8px 12px; background: var(--bg); transition: all .15s;
+}
+.nnd-chip b { color: var(--zero); }
+.nnd-chip--on { border-color: var(--green); }
+.nnd-chip--on b { color: var(--green); }
+
+/* 발열 평형 랩 */
+.th-visual {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  padding: 16px; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--bg); margin-bottom: 12px;
+}
+.th-cpu {
+  width: 74px; height: 74px; border-radius: 8px; border: 1px solid var(--line-2);
+  display: grid; place-items: center; transition: background .3s, box-shadow .3s;
+}
+.th-temp { font-family: var(--mono); font-size: 13px; color: var(--ink); font-weight: 600; }
+.th-fan {
+  font-size: 36px; color: var(--cyan); display: inline-block;
+  animation: svgspin 1.2s linear infinite; transition: opacity .2s;
+}
+.th-bar {
+  position: relative; height: 10px; border-radius: 5px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--line-2); margin-bottom: 14px;
+}
+.th-bar__fill { height: 100%; width: 0; transition: width .25s, background .25s; }
+.th-bar__limit { position: absolute; right: 0; top: 0; bottom: 0; width: 2px; background: #e0654a; }
+
+/* 평활 랩 */
+.smooth-svg {
+  display: block; width: 100%; border: 1px solid var(--line-2);
+  border-radius: 6px; background: var(--bg); margin-bottom: 4px;
+}
+
 /* 밴드갭 랩 */
 .band-view {
   border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg);

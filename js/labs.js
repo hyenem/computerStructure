@@ -567,6 +567,161 @@ const LABS = {
     paintFrames(-1);
   },
 
+  /* ── NAND 조립: NAND만으로 NOT·AND·OR 만들기 ── */
+  nandlab(el) {
+    const nand = (x, y) => (x & y) ? 0 : 1;
+    let target = 'NOT', a = 1, b = 0;
+
+    el.innerHTML = `
+      <div class="lab lab--nnd">
+        <div class="lab__tabs">
+          ${['NOT', 'AND', 'OR'].map(t => `<button class="lab__tab" data-t="${t}">${t}</button>`).join('')}
+        </div>
+        <div class="nnd-in">
+          <span class="nnd-lbl">입력</span>
+          <button class="bit" data-i="a">1</button>
+          <button class="bit" data-i="b">0</button>
+        </div>
+        <div class="nnd-stages"></div>
+        <p class="lab__caption"></p>
+      </div>`;
+
+    const tabs = el.querySelectorAll('.lab__tab');
+    const bitA = el.querySelector('[data-i="a"]');
+    const bitB = el.querySelector('[data-i="b"]');
+    const stages = el.querySelector('.nnd-stages');
+    const cap = el.querySelector('.lab__caption');
+
+    const chip = (label, v) => `<span class="nnd-chip ${v ? 'nnd-chip--on' : ''}">${label} = <b>${v}</b></span>`;
+
+    function render() {
+      tabs.forEach(t => t.classList.toggle('lab__tab--on', t.dataset.t === target));
+      bitA.textContent = a; bitA.classList.toggle('bit--on', !!a);
+      bitB.textContent = b; bitB.classList.toggle('bit--on', !!b);
+      bitB.style.display = target === 'NOT' ? 'none' : '';
+
+      let rows = [], out, expr;
+      if (target === 'NOT') {
+        out = nand(a, a);
+        rows.push(chip(`NAND(A,A)`, out));
+        expr = `NOT(${a}) = ${out} — 입력을 두 갈래로 묶으면 끝 (NAND 1개)`;
+      } else if (target === 'AND') {
+        const n1 = nand(a, b); out = nand(n1, n1);
+        rows.push(chip(`① NAND(A,B)`, n1), chip(`② NAND(①,①)`, out));
+        expr = `AND(${a},${b}) = ${out} — NAND 뒤에 NOT(=NAND)을 달면 AND (NAND 2개)`;
+      } else {
+        const n1 = nand(a, a), n2 = nand(b, b); out = nand(n1, n2);
+        rows.push(chip(`① NAND(A,A)`, n1) + chip(`② NAND(B,B)`, n2), chip(`③ NAND(①,②)`, out));
+        expr = `OR(${a},${b}) = ${out} — 드모르간: A+B = NAND(¬A,¬B) (NAND 3개)`;
+      }
+      stages.innerHTML = rows.map(r => `<div class="nnd-row">${r}</div>`).join('<div class="nnd-arrow">↓</div>');
+      cap.innerHTML = expr;
+    }
+    tabs.forEach(t => t.addEventListener('click', () => { target = t.dataset.t; render(); }));
+    bitA.addEventListener('click', () => { a ^= 1; render(); });
+    bitB.addEventListener('click', () => { b ^= 1; render(); });
+    render();
+  },
+
+  /* ── 발열 평형: 부하·팬 속도 → 온도, 스로틀링 체험 ── */
+  thermal(el) {
+    const AMB = 25, TMAX = 100;
+    el.innerHTML = `
+      <div class="lab lab--thermal">
+        <div class="th-visual">
+          <div class="th-cpu"><span class="th-temp">--°C</span></div>
+          <span class="th-fan">✣</span>
+        </div>
+        <div class="th-bar"><div class="th-bar__fill"></div><span class="th-bar__limit"></span></div>
+        <label class="tr-control"><span>CPU 부하</span>
+          <input type="range" min="5" max="150" value="60" class="tr-slider" data-s="load"/>
+          <span class="tr-volt" data-v="load">60W</span></label>
+        <label class="tr-control"><span>팬 속도</span>
+          <input type="range" min="0" max="100" value="40" class="tr-slider" data-s="fan"/>
+          <span class="tr-volt" data-v="fan">40%</span></label>
+        <p class="lab__caption"></p>
+      </div>`;
+
+    const sLoad = el.querySelector('[data-s="load"]');
+    const sFan = el.querySelector('[data-s="fan"]');
+    const vLoad = el.querySelector('[data-v="load"]');
+    const vFan = el.querySelector('[data-v="fan"]');
+    const cpu = el.querySelector('.th-cpu');
+    const tempEl = el.querySelector('.th-temp');
+    const fan = el.querySelector('.th-fan');
+    const fill = el.querySelector('.th-bar__fill');
+    const cap = el.querySelector('.lab__caption');
+
+    function render() {
+      const load = +sLoad.value, fanPct = +sFan.value;
+      vLoad.textContent = load + 'W'; vFan.textContent = fanPct + '%';
+      const theta = 0.85 - fanPct / 100 * 0.55;          // 열저항 °C/W
+      let T = AMB + load * theta;
+      const throttled = T > TMAX;
+      if (throttled) T = TMAX;
+      tempEl.textContent = Math.round(T) + '°C';
+      const heat = Math.min(1, (T - AMB) / (TMAX - AMB));
+      cpu.style.background = `rgb(${40 + heat * 160}, ${50 - heat * 20}, ${60 - heat * 30})`;
+      cpu.style.boxShadow = throttled ? '0 0 18px rgba(224,100,60,.7)' : 'none';
+      fill.style.width = Math.min(100, (T - AMB) / (TMAX - AMB) * 100) + '%';
+      fill.style.background = throttled ? '#e0654a' : (heat > .7 ? '#e0916f' : '#86e6a2');
+      fan.style.animationDuration = (1.8 - fanPct / 100 * 1.5) + 's';
+      fan.style.opacity = fanPct === 0 ? .25 : 1;
+      cap.innerHTML = throttled
+        ? `⚠ <b>스로틀링!</b> ${TMAX}°C 한계 도달 — CPU가 스스로 클럭을 낮춥니다. 팬을 올리거나 부하를 줄여보세요.`
+        : `평형 온도 = 25°C + ${load}W × ${theta.toFixed(2)}°C/W = <b>${Math.round(T)}°C</b> — 열저항 모델 그대로!`;
+    }
+    sLoad.addEventListener('input', render);
+    sFan.addEventListener('input', render);
+    render();
+  },
+
+  /* ── 평활: 커패시터 용량 → 리플 감소 ── */
+  smooth(el) {
+    const W = 240, H = 80, P = 40; // 파형 폭/높이/반주기 px
+    el.innerHTML = `
+      <div class="lab lab--smooth">
+        <svg class="smooth-svg" viewBox="0 0 ${W} ${H}">
+          <path class="smooth-raw" fill="none" stroke="#a9803a" stroke-width="1.2" opacity=".6"/>
+          <path class="smooth-out" fill="none" stroke="#86e6a2" stroke-width="2"/>
+        </svg>
+        <label class="tr-control"><span>커패시터 용량</span>
+          <input type="range" min="0" max="100" value="15" class="tr-slider"/>
+          <span class="tr-volt">15%</span></label>
+        <p class="lab__caption"></p>
+      </div>`;
+    const raw = el.querySelector('.smooth-raw');
+    const out = el.querySelector('.smooth-out');
+    const slider = el.querySelector('.tr-slider');
+    const volt = el.querySelector('.tr-volt');
+    const cap = el.querySelector('.lab__caption');
+
+    function render() {
+      const c = +slider.value;
+      volt.textContent = c + '%';
+      const ripple = 1 - c / 100 * 0.96; // 0.04 ~ 1
+      let dRaw = '', dOut = '';
+      for (let x = 0; x <= W; x += 2) {
+        const s = Math.abs(Math.sin(x / P * Math.PI));       // 정류된 맥동 0~1
+        const yR = H - 8 - s * (H - 20);
+        const vO = 1 - ripple * (1 - s);                      // 평활 후
+        const yO = H - 8 - vO * (H - 20);
+        dRaw += (x ? 'L' : 'M') + x + ' ' + yR.toFixed(1) + ' ';
+        dOut += (x ? 'L' : 'M') + x + ' ' + yO.toFixed(1) + ' ';
+      }
+      raw.setAttribute('d', dRaw);
+      out.setAttribute('d', dOut);
+      const pct = Math.round(ripple * 100);
+      cap.innerHTML = pct > 60
+        ? `리플 ±${pct}% — 이 출렁임으론 칩이 오작동! 커패시터를 키워보세요.`
+        : pct > 10
+          ? `리플 ±${pct}% — 커패시터가 골을 메워주는 중 (출렁임을 물탱크처럼 흡수)`
+          : `리플 ±${pct}% — <b>매끈한 직류!</b> 황금색(정류 직후) → 초록색(평활 후)`;
+    }
+    slider.addEventListener('input', render);
+    render();
+  },
+
   /* ── 밴드갭: 에너지 틈을 조절해 도체/반도체/부도체 체험 ── */
   bandgap(el) {
     el.innerHTML = `
