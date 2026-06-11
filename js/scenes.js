@@ -168,6 +168,13 @@
          ${fins(256, 326, 80, 52, 7, C.pan)}`,
         296, 402, 'middle')}
 
+      ${hot('clock', '클럭 발생기',
+        `<rect class="hot__shape" x="64" y="108" width="96" height="48" rx="24" fill="${C.metal}" stroke="${C.ln2}" stroke-width="1.5"/>
+         <text x="112" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.ink}">XTAL</text>
+         <text x="112" y="142" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">24MHz</text>
+         <path d="M70 170 h8 v-8 h8 v8 h8 v-8 h8 v8 h8 v-8 h8 v8 h8" fill="none" stroke="${C.gold}" stroke-width="1.5" opacity=".8"/>`,
+        112, 196, 'middle')}
+
       ${hot('rom', 'ROM·BIOS',
         `<rect class="hot__shape" x="70" y="320" width="96" height="50" rx="3" fill="${C.pan2}" stroke="${C.goldD}"/>
          <rect x="78" y="328" width="80" height="34" rx="2" fill="${C.pan}"/>
@@ -487,8 +494,10 @@
     /* ─── 제어장치 ─── */
     control: svg(`
       ${lbl(40, 40, 'CONTROL UNIT · 지휘 흐름')}
-      <rect x="56" y="100" width="150" height="58" rx="4" fill="${C.pan2}" stroke="${C.ln2}"/>
-      <text x="131" y="134" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">명령 레지스터</text>
+      ${hot('isa', '명령어의 정체는?',
+        `<rect class="hot__shape" x="56" y="100" width="150" height="58" rx="4" fill="${C.pan2}" stroke="${C.goldD}"/>
+         <text x="131" y="134" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">명령 레지스터</text>`,
+        131, 176, 'middle')}
       ${arrowR(206, 129, 262, C.cyan)}
       <path d="M262 90 L406 90 L426 168 L282 168 Z" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
       <text x="350" y="134" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">디코더</text>
@@ -939,6 +948,71 @@
         <text x="${138+(i%4)*116}" y="${146+Math.floor(i/4)*92}" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">R${i}</text>
         <text x="${138+(i%4)*116}" y="${172+Math.floor(i/4)*92}" text-anchor="middle" font-family="monospace" font-size="15" fill="${C.ink}">${v}</text>`).join('')}
       <text x="300" y="334" text-anchor="middle" class="s-label" fill="${C.dim}">프로그램이 자유롭게 값을 담아 쓰는 작업용 칸들</text>
+    `),
+
+    /* ─── 클럭: 수정 진동자 → PLL → 클럭 트리 ─── */
+    clock: svg(`
+      ${lbl(40, 40, 'CLOCK · 박자의 근원')}
+      <rect x="56" y="110" width="110" height="64" rx="32" fill="${C.metal}" stroke="${C.ln2}" stroke-width="1.5"/>
+      <text x="111" y="136" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.ink}">XTAL</text>
+      <text x="111" y="152" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">24 MHz</text>
+      <text x="111" y="196" text-anchor="middle" class="s-label" fill="${C.dim}">수정 진동자 (압전 효과)</text>
+      <path d="M176 142 q9 -20 18 0 t18 0 t18 0" fill="none" stroke="${C.gold}" stroke-width="2"/>
+      ${flow('M176 142 q9 -20 18 0 t18 0 t18 0', C.gold, 1, 1.5, 2)}
+      <rect x="252" y="112" width="96" height="60" rx="6" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <text x="300" y="138" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.cyan}">PLL</text>
+      <text x="300" y="156" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">× 200</text>
+      <path d="M360 142 h9 v-22 h9 v22 h9 v-22 h9 v22 h9 v-22 h9 v22 h9 v-22 h9 v22 h9" fill="none" stroke="${C.grn}" stroke-width="2"/>
+      ${flow('M360 142 H448', C.grn, 3, 1.0, 2)}
+      <text x="500" y="128" font-family="monospace" font-size="11" fill="${C.grn}">4.8 GHz</text>
+      <text x="500" y="146" font-family="monospace" font-size="8" fill="${C.fnt}">구형파 ⎍⎍⎍</text>
+      <!-- 클럭 트리: 모든 부품에 같은 박자를 -->
+      <path d="M448 142 H470 V230" stroke="${C.grn}" stroke-width="1.5" fill="none"/>
+      ${[['CPU 코어', 130], ['캐시·레지스터', 300], ['메모리 컨트롤러', 470]].map(([t, x]) => `
+        <path d="M470 230 H${x} V280" stroke="${C.cyanD}" stroke-width="1.5" fill="none"/>
+        ${flow(`M470 232 H${x} V278`, C.cyan, 1, 1.9, 2)}
+        <rect x="${x - 64}" y="280" width="128" height="44" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
+        <text x="${x}" y="306" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">${t}</text>`).join('')}
+      <text x="300" y="368" text-anchor="middle" class="s-label" fill="${C.dim}">클럭 트리 — 모든 플립플롭이 같은 순간에 같은 박자를 받도록</text>
+      <text x="300" y="394" text-anchor="middle" class="s-label" fill="${C.fnt}">한 박자(3GHz 기준) ≈ 0.33 ns — 빛도 10cm밖에 못 가는 시간</text>
+    `),
+
+    /* ─── 명령어: C → 어셈블리 → 기계어 비트 ─── */
+    isa: svg(`
+      ${lbl(40, 40, 'INSTRUCTION · 코드에서 비트까지')}
+      <rect x="60" y="64" width="220" height="44" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="76" y="91" font-family="monospace" font-size="12" fill="${C.ink}">a = b + 3;</text>
+      <text x="292" y="91" class="s-label" fill="${C.fnt}">← C 언어 (사람의 생각)</text>
+      <path d="M170 108 V134" stroke="${C.cyanD}" stroke-width="1.5"/>
+      ${flow('M170 110 V132', C.cyan, 1, 1.2, 2)}
+      <text x="182" y="126" font-family="monospace" font-size="8.5" fill="${C.cyanD}">컴파일러</text>
+      <rect x="60" y="136" width="220" height="84" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="76" y="160" font-family="monospace" font-size="10.5" fill="${C.cyan}">LOAD  R1, b</text>
+      <text x="76" y="180" font-family="monospace" font-size="10.5" fill="${C.cyan}">ADDI  R1, 3</text>
+      <text x="76" y="200" font-family="monospace" font-size="10.5" fill="${C.cyan}">STORE a, R1</text>
+      <text x="292" y="180" class="s-label" fill="${C.fnt}">← 어셈블리어 (기계어의 사람용 표기)</text>
+      <path d="M170 220 V246" stroke="${C.cyanD}" stroke-width="1.5"/>
+      ${flow('M170 222 V244', C.cyan, 1, 1.2, 2)}
+      <text x="182" y="238" font-family="monospace" font-size="8.5" fill="${C.cyanD}">어셈블러</text>
+      <!-- 기계어 워드: 비트 필드 분해 (ADDI R1, 3) -->
+      <text x="60" y="266" font-family="monospace" font-size="8.5" fill="${C.fnt}">ADDI R1, 3 의 정체 (32비트):</text>
+      <rect x="60"  y="274" width="170" height="34" rx="3" fill="#2a2210" stroke="${C.gold}"/>
+      <text x="145" y="296" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">000000000011</text>
+      <rect x="230" y="274" width="74" height="34" rx="3" fill="#10262c" stroke="${C.cyan}"/>
+      <text x="267" y="296" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">00001</text>
+      <rect x="304" y="274" width="60" height="34" rx="3" fill="#16301f" stroke="${C.grn}"/>
+      <text x="334" y="296" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.grn}">000</text>
+      <rect x="364" y="274" width="74" height="34" rx="3" fill="#10262c" stroke="${C.cyan}"/>
+      <text x="401" y="296" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">00001</text>
+      <rect x="438" y="274" width="120" height="34" rx="3" fill="#2c1a14" stroke="#e0916f"/>
+      <text x="498" y="296" text-anchor="middle" font-family="monospace" font-size="10" fill="#e0916f">0010011</text>
+      <text x="145" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.gold}">즉시값 3</text>
+      <text x="267" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyan}">rs1=R1</text>
+      <text x="334" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.grn}">funct</text>
+      <text x="401" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyan}">rd=R1</text>
+      <text x="498" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="#e0916f">opcode</text>
+      <text x="300" y="362" text-anchor="middle" class="s-label" fill="${C.dim}">디코더는 이 칸들을 잘라 읽는 회로 — CPU가 먹는 건 이 비트뿐</text>
+      <text x="300" y="386" text-anchor="middle" class="s-label" fill="${C.fnt}">이 칸 나누기의 약속 전체 = ISA (x86 · ARM · RISC-V)</text>
     `),
 
     /* ─── 파이프라인: 5단계 사선 중첩 ─── */

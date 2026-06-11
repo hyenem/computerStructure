@@ -144,6 +144,7 @@
   // 긴 용어 먼저 (부분 일치 방지). 패널당 용어별 첫 등장만 링크.
   const XREF = [
     ['프로그램 카운터', 'reg_pc'], ['페이지 테이블', 'virtualmem'], ['가상 메모리', 'virtualmem'],
+    ['명령 레지스터', 'reg_ir'], ['명령어', 'isa'], ['기계어', 'isa'], ['클럭', 'clock'],
     ['주소 버스', 'bus_addr'], ['데이터 버스', 'bus_data'], ['제어 버스', 'bus_ctrl'],
     ['논리게이트', 'gate'], ['트랜지스터', 'transistor'], ['플립플롭', 'register'],
     ['메모리 셀', 'memcell'], ['제어장치', 'control'], ['파이프라인', 'pipeline'],
