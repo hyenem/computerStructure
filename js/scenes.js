@@ -55,6 +55,22 @@
     return `<path d="M${x1} ${y} H${x2}" stroke="${col}" stroke-width="2" fill="none"/>
             <path d="M${x2 - 9} ${y - 6} L${x2} ${y} L${x2 - 9} ${y + 6}" fill="${col}"/>`;
   }
+  // 경로 d를 따라 흐르는 입자 n개(데이터·전류·신호 연출)
+  function flow(d, col, n, dur, r) {
+    n = n || 3; dur = dur || 2.4; r = r || 3;
+    let s = '';
+    for (let i = 0; i < n; i++) {
+      const begin = (-dur * i / n).toFixed(2);
+      s += `<circle r="${r}" fill="${col}" opacity=".9">
+        <animateMotion dur="${dur}s" begin="${begin}s" repeatCount="indefinite" path="${d}"/>
+      </circle>`;
+    }
+    return s;
+  }
+  // 자체 중심으로 회전(팬·플래터). cls: spin | spin-slow | spin-rev
+  function spin(inner, cls) {
+    return `<g class="${cls || 'spin'}">${inner}</g>`;
+  }
   // 헤더(제목 strip) 달린 클릭 가능한 부품 패널
   function bay(kid, label, x, y, w, h, art, opts) {
     opts = opts || {};
@@ -90,8 +106,8 @@
 
       ${bay('cooler', '냉각 시스템', 250, 280, 150, 104,
         `${fins(262, 312, 126, 50, 9, C.pan)}
-         <circle cx="325" cy="345" r="26" fill="${C.pan}" stroke="${C.cyanD}"/>
-         <path d="M325 345 L325 322 M325 345 L345 357 M325 345 L305 357" stroke="${C.cyanD}" stroke-width="2.5"/>`)}
+         ${spin(`<circle cx="325" cy="345" r="26" fill="${C.pan}" stroke="${C.cyanD}"/>
+           <path d="M325 345 L325 322 M325 345 L345 357 M325 345 L305 357" stroke="${C.cyanD}" stroke-width="2.5"/>`)}`)}
 
       ${bay('gpu', '그래픽카드', 412, 280, 150, 104,
         `<rect x="426" y="312" width="122" height="58" rx="4" fill="#12202c" stroke="${C.cyanD}"/>
@@ -114,8 +130,8 @@
 
       ${bay('psu', '전원공급장치', 38, 280, 188, 104,
         `<rect x="56" y="312" width="152" height="58" rx="4" fill="#13202b" stroke="${C.ln2}"/>
-         <circle cx="132" cy="341" r="24" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>
-         <path d="M132 317 V365 M108 341 H156 M115 324 L149 358 M149 324 L115 358" stroke="${C.goldD}" stroke-width="1" opacity=".6"/>`,
+         ${spin(`<circle cx="132" cy="341" r="24" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>
+           <path d="M132 317 V365 M108 341 H156 M115 324 L149 358 M149 324 L115 358" stroke="${C.goldD}" stroke-width="1" opacity=".6"/>`, 'spin-slow')}`,
         { accent: C.goldD })}
     `),
 
@@ -150,6 +166,11 @@
          <rect x="78" y="328" width="80" height="34" rx="2" fill="${C.pan}"/>
          <text x="118" y="350" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.goldD}">BIOS</text>`,
         118, 388, 'middle')}
+
+      <!-- 버스를 따라 흐르는 데이터 -->
+      ${flow('M376 205 H430', C.cyan, 2, 1.8, 2.5)}
+      ${flow('M291 290 V318', C.cyan, 2, 1.6, 2.5)}
+      ${flow('M250 352 H166', C.gold, 2, 2.2, 2.5)}
     `),
 
     /* ─── L2 CPU: 다이 플로어플랜 ─── */
@@ -195,6 +216,9 @@
       <path d="M480 200 L410 210" stroke="${C.goldD}" stroke-width="1.5"/>
       <text x="300" y="360" text-anchor="middle" class="s-label" fill="${C.grn}">결과 출력 ↓</text>
       <path d="M300 330 V356" stroke="${C.grn}" stroke-width="2"/>
+      ${flow('M210 72 V128', C.cyan, 2, 1.6, 2.5)}
+      ${flow('M390 72 V128', C.cyan, 2, 1.6, 2.5)}
+      ${flow('M300 250 V356', C.grn, 2, 1.8, 2.5)}
 
       ${hot('adder', '가산기',
         `<rect class="hot__shape" x="200" y="150" width="92" height="130" rx="4" fill="#1a2433" stroke="${C.cyanD}"/>
@@ -234,6 +258,11 @@
       <path d="M246 230 H470" stroke="${C.grn}" stroke-width="2" fill="none"/>
       <text x="478" y="155" class="s-label" fill="${C.grn}">합 (Sum)</text>
       <text x="478" y="235" class="s-label" fill="${C.grn}">자리올림 (Carry)</text>
+      <!-- 신호 흐름 -->
+      ${flow('M60 130 H170', C.cyan, 2, 1.6, 2.5)}
+      ${flow('M60 240 H140 M90 240 V170 H170', C.cyan, 2, 1.9, 2.5)}
+      ${flow('M246 150 H470', C.grn, 2, 1.8, 2.5)}
+      ${flow('M246 230 H470', C.grn, 2, 2.0, 2.5)}
     `),
 
     /* ─── L5 논리게이트: AND 기호 + 트랜지스터로 분해 ─── */
@@ -247,6 +276,9 @@
       <text x="250" y="186" text-anchor="middle" font-family="monospace" font-size="18" fill="${C.gold}">AND</text>
       <path d="M330 180 H420" stroke="${C.grn}" stroke-width="2"/>
       <text x="430" y="185" class="s-label" fill="${C.grn}">출력</text>
+      ${flow('M70 130 H190', C.cyan, 2, 1.7, 2.5)}
+      ${flow('M70 230 H190', C.cyan, 2, 1.9, 2.5)}
+      ${flow('M330 180 H420', C.grn, 2, 1.7, 2.5)}
       <text x="250" y="300" text-anchor="middle" class="s-label" fill="${C.dim}">이 게이트는 무엇으로 만들까? ↓</text>
 
       ${hot('transistor', '트랜지스터',
@@ -279,6 +311,10 @@
       <text x="300" y="142" text-anchor="middle" class="s-label" fill="${C.gold}">게이트</text>
       <text x="445" y="180" text-anchor="middle" class="s-label" fill="${C.dim}">드레인</text>
       <path d="M155 200 V178 M300 150 V128 M445 200 V178" stroke="${C.ln2}" stroke-width="1"/>
+      <!-- 게이트가 열리면 소스→드레인으로 전자가 흐른다 -->
+      <path d="M160 234 Q300 256 440 234" fill="none" stroke="${C.grn}" stroke-width="1" stroke-dasharray="2 4" opacity=".5"/>
+      ${flow('M160 234 Q300 256 440 234', C.grn, 4, 1.8, 2.5)}
+      <text x="300" y="290" text-anchor="middle" class="s-label" fill="${C.grn}">전자 흐름 = 전류</text>
     `),
 
     /* ─── L7 반도체: PN 접합 ─── */
@@ -296,6 +332,9 @@
       <rect x="270" y="120" width="60" height="180" fill="#11202c" opacity=".8"/>
       <line x1="300" y1="120" x2="300" y2="300" stroke="${C.ink}" stroke-dasharray="4 4"/>
       <text x="300" y="330" text-anchor="middle" class="s-label" fill="${C.dim}">공핍 영역 (한 방향으로만 전류 통과)</text>
+      <!-- 정공·전자가 접합부로 드리프트 -->
+      ${flow('M110 250 H262', C.gold, 2, 2.6, 3)}
+      ${flow('M490 190 H338', C.cyan, 2, 2.6, 3)}
 
       ${hot('atom', '실리콘 원자',
         `<circle class="hot__shape" cx="300" cy="375" r="22" fill="#16222e" stroke="${C.cyanD}" stroke-width="1.5"/>

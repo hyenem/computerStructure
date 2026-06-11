@@ -243,6 +243,20 @@ body::before {
 .hot:hover .hot__go,
 .hot:focus-visible .hot__go { opacity: 1; }
 
+/* SVG 애니메이션 — 회전(팬·플래터) / 점멸(코어) / 맥동 */
+.spin, .spin-slow, .spin-rev { transform-box: fill-box; transform-origin: center; }
+.spin      { animation: svgspin 2.6s linear infinite; }
+.spin-slow { animation: svgspin 9s linear infinite; }
+.spin-rev  { animation: svgspin 3.2s linear infinite reverse; }
+@keyframes svgspin { to { transform: rotate(360deg); } }
+.gpu-core { animation: coreblink 2.8s ease-in-out infinite; }
+@keyframes coreblink { 0%, 100% { opacity: .3; } 50% { opacity: .95; } }
+.throb { animation: throb 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes throb { 0%, 100% { opacity: .55; } 50% { opacity: 1; transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .spin, .spin-slow, .spin-rev, .gpu-core, .throb { animation: none; }
+}
+
 /* 하위 부품 카드(핫스팟) */
 .card {
   position: relative; text-align: left; cursor: pointer;
