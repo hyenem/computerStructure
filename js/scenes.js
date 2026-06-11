@@ -446,7 +446,11 @@
       <circle cx="468" cy="160" r="8" fill="none" stroke="${C.gold}" stroke-width="1.5"/>
       <text x="420" y="166" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">NOT</text>
       <text x="430" y="236" text-anchor="middle" class="s-label" fill="${C.dim}">뒤집기</text>
-      <text x="300" y="300" text-anchor="middle" class="s-label" fill="${C.cyan}">이 셋만 있으면 어떤 계산이든 만들 수 있다</text>
+      <text x="300" y="284" text-anchor="middle" class="s-label" fill="${C.cyan}">이 셋만 있으면 어떤 계산이든 만들 수 있다</text>
+      ${hot('gate', '논리게이트 자세히',
+        `<rect class="hot__shape" x="180" y="316" width="240" height="56" rx="6" fill="#16222e" stroke="${C.gold}"/>
+         <text x="300" y="349" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">게이트 회로 들여다보기 ↘</text>`,
+        300, 406, 'middle')}
     `),
 
     /* ─── 칩셋·버스 ─── */
@@ -477,14 +481,17 @@
       <text x="330" y="206" class="s-label" fill="${C.dim}">→ 운영체제 로드</text>
     `),
 
-    /* ─── GPU: 코어 그리드 + VRAM ─── */
+    /* ─── GPU: 코어 그리드 + VRAM (둘 다 진입) ─── */
     gpu: svg(`
-      ${lbl(40, 40, 'GPU · 수천 개의 작은 코어')}
-      <rect x="70" y="70" width="380" height="280" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
-      ${(function(){let s='';for(let r=0;r<8;r++)for(let c=0;c<11;c++){s+=`<rect class="gpu-core" style="animation-delay:${(((r*11+c)%10)*0.28).toFixed(2)}s" x="${88+c*33}" y="${90+r*31}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}"/>`;}return s;})()}
-      <rect x="470" y="70" width="60" height="280" rx="6" fill="#13202b" stroke="${C.ln2}"/>
-      <text x="500" y="215" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}" transform="rotate(90 500 215)">VRAM</text>
-      <text x="260" y="380" text-anchor="middle" class="s-label" fill="${C.dim}">같은 계산을 동시에 수천 번 — 그래픽 · AI</text>
+      ${lbl(40, 40, 'GPU · 코어 + VRAM')}
+      ${hot('gpucore', '연산 코어',
+        `<rect class="hot__shape" x="70" y="70" width="380" height="280" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
+         ${(function(){let s='';for(let r=0;r<8;r++)for(let c=0;c<11;c++){s+=`<rect class="gpu-core" style="animation-delay:${(((r*11+c)%10)*0.28).toFixed(2)}s" x="${88+c*33}" y="${90+r*31}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}"/>`;}return s;})()}`,
+        260, 374, 'middle')}
+      ${hot('vram', 'VRAM',
+        `<rect class="hot__shape" x="470" y="70" width="60" height="280" rx="6" fill="#13202b" stroke="${C.ln2}"/>
+         <text x="500" y="215" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}" transform="rotate(90 500 215)">VRAM</text>`,
+        500, 374, 'middle')}
     `),
 
     /* ─── PSU: AC→DC 변환 ─── */
@@ -536,16 +543,18 @@
       <text x="480" y="225" class="s-label" fill="${C.dim}">·인터넷</text>
     `),
 
-    /* ─── SSD: 컨트롤러 + NAND ─── */
+    /* ─── SSD: 컨트롤러 + NAND(→플래시 셀) ─── */
     ssd: svg(`
       ${lbl(40, 40, 'SSD · 플래시 메모리')}
-      <rect x="70" y="80" width="460" height="260" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
-      <rect x="240" y="110" width="120" height="70" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
-      <text x="300" y="150" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">컨트롤러</text>
-      ${[0,1,2,3].map(i => `<rect x="${100+i*110}" y="220" width="90" height="80" rx="4" fill="#13202b" stroke="${C.ln2}"/>
-        <text x="${145+i*110}" y="265" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">NAND</text>
-        ${flow(`M300 180 Q${145+i*110} 200 ${145+i*110} 220`, C.cyan, 1, 2.2, 2)}`).join('')}
-      <text x="300" y="328" text-anchor="middle" class="s-label" fill="${C.dim}">셀에 전자를 가둬 0/1 저장 — 움직이는 부품 없음</text>
+      <rect x="70" y="74" width="460" height="252" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <rect x="240" y="100" width="120" height="60" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
+      <text x="300" y="135" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">컨트롤러</text>
+      ${hot('flashcell', '플래시 셀',
+        `<rect class="hot__shape" x="88" y="200" width="424" height="108" rx="6" fill="#0f1a23" stroke="${C.cyanD}"/>
+         ${[0,1,2,3].map(i => `<rect x="${100+i*110}" y="216" width="90" height="76" rx="4" fill="#13202b" stroke="${C.ln2}"/>
+           <text x="${145+i*110}" y="258" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">NAND</text>`).join('')}`,
+        300, 330, 'middle')}
+      ${[0,1,2,3].map(i => flow(`M300 160 Q${145+i*110} 190 ${145+i*110} 216`, C.cyan, 1, 2.2, 2)).join('')}
     `),
 
     /* ─── HDD: 플래터 + 헤드 ─── */
@@ -581,6 +590,66 @@
       <g class="throb"><path d="M270 272 H330 M278 282 H322" stroke="${C.grn}" stroke-width="3"/></g>
       <text x="350" y="280" class="s-label" fill="${C.grn}">축전기 (전하=1, 빔=0)</text>
       <path d="M300 282 V300" stroke="${C.gold}" stroke-width="2"/>
+    `),
+
+    /* ─── GPU 연산 코어: SIMD 방송 ─── */
+    gpucore: (function () {
+      const cols = 6, rows = 4, x0 = 96, y0 = 156, gw = 70, gh = 50, bw = gw - 14, bh = gh - 14;
+      let boxes = '', arrows = '';
+      for (let c = 0; c < cols; c++) {
+        const ax = x0 + c * gw + bw / 2;
+        arrows += `<path d="M${ax} 110 V${y0}" stroke="${C.gold}" stroke-width="1" opacity=".35"/>`;
+      }
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const x = x0 + c * gw, y = y0 + r * gh;
+        boxes += `<rect class="gpu-core" style="animation-delay:${(((r * cols + c) % 8) * 0.3).toFixed(2)}s" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" fill="#16303a" stroke="${C.cyanD}"/>
+                  <text x="${x + bw / 2}" y="${y + bh / 2 + 3}" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyanD}">ALU</text>`;
+      }
+      return svg(`${lbl(40, 40, 'STREAMING CORES · SIMD')}
+        <rect x="60" y="66" width="480" height="42" rx="5" fill="${C.pan2}" stroke="${C.gold}"/>
+        <text x="300" y="92" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">같은 명령을 모든 코어에 한 번에 방송</text>
+        ${arrows}${boxes}
+        <text x="300" y="400" text-anchor="middle" class="s-label" fill="${C.dim}">수천 코어가 서로 다른 데이터에 동시에 — 픽셀 · 행렬</text>`);
+    })(),
+
+    /* ─── VRAM: 넓은 대역폭 ─── */
+    vram: (function () {
+      let lanes = '', flows = '', banks = '';
+      for (let i = 0; i < 6; i++) {
+        const y = 140 + i * 26;
+        lanes += `<path d="M214 ${y} H386" stroke="${C.cyanD}" stroke-width="2"/>`;
+        flows += flow(`M216 ${y} H384`, C.grn, 1, 1.3 + i * 0.04, 2.5);
+      }
+      for (let i = 0; i < 4; i++) {
+        banks += `<rect x="392" y="${126 + i * 44}" width="148" height="36" rx="3" fill="#13202b" stroke="${C.ln2}"/>
+                  <text x="466" y="${148 + i * 44}" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">BANK ${i}</text>`;
+      }
+      return svg(`${lbl(40, 40, 'VRAM · 넓은 대역폭')}
+        <rect x="60" y="120" width="150" height="180" rx="6" fill="${C.pan2}" stroke="${C.cyan}"/>
+        <text x="135" y="216" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.cyan}">GPU 코어</text>
+        ${lanes}${flows}${banks}
+        <text x="300" y="396" text-anchor="middle" class="s-label" fill="${C.dim}">여러 길로 한꺼번에 — 대역폭이 일반 RAM보다 훨씬 크다</text>`);
+    })(),
+
+    /* ─── 플래시 셀: 플로팅 게이트 트랜지스터 ─── */
+    flashcell: svg(`
+      ${lbl(40, 40, 'FLOATING-GATE CELL · 갇힌 전자')}
+      <rect x="80" y="252" width="440" height="110" rx="4" fill="#1d2a3a" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <text x="300" y="335" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.dim}">P형 기판</text>
+      <rect x="110" y="252" width="90" height="46" rx="3" fill="#21506b" stroke="${C.cyan}"/>
+      <rect x="400" y="252" width="90" height="46" rx="3" fill="#21506b" stroke="${C.cyan}"/>
+      <text x="155" y="280" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.cyan}">소스</text>
+      <text x="445" y="280" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.cyan}">드레인</text>
+      <!-- 터널 산화막 -->
+      <rect x="210" y="238" width="180" height="14" fill="${C.goldD}" opacity=".4"/>
+      <!-- 플로팅 게이트 (갇힌 전자) -->
+      <rect x="222" y="196" width="156" height="34" rx="3" fill="${C.metal}" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="300" y="190" text-anchor="middle" class="s-label" fill="${C.gold}">플로팅 게이트 (절연체로 격리)</text>
+      ${[0,1,2,3,4].map(i => `<text x="${244+i*28}" y="${218}" font-size="13" fill="${C.grn}">−</text>`).join('')}
+      <!-- 제어 게이트 -->
+      <rect x="222" y="150" width="156" height="34" rx="3" fill="${C.metal}" stroke="${C.cyan}"/>
+      <text x="300" y="172" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">제어 게이트</text>
+      <text x="300" y="392" text-anchor="middle" class="s-label" fill="${C.grn}">절연체에 갇힌 전자 = 1 · 없으면 0 (전원 꺼져도 유지)</text>
     `),
   };
 
