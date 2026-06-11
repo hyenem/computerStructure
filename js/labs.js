@@ -451,4 +451,119 @@ const LABS = {
     el.querySelector('.pn-swap').addEventListener('click', () => { forward = !forward; render(); });
     render();
   },
+
+  /* ── 파이프라인: 사이클을 한 박자씩 진행 ── */
+  pipeline(el) {
+    const ST = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+    const N = 3; // 명령 수
+    const LAST = N - 1 + ST.length - 1; // 마지막 사이클 번호
+    let cycle = -1;
+
+    el.innerHTML = `
+      <div class="lab lab--pipe">
+        <div class="pipe-top">
+          <span class="pipe-cycle">시작 전</span>
+          <button class="pipe-next">▸ 다음 박자</button>
+        </div>
+        <table class="pipe-grid">
+          <thead><tr><th></th>${ST.map(s => `<th>${s}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${Array.from({ length: N }, (_, i) => `<tr><td class="pipe-name">명령${i + 1}</td>${ST.map((_, j) => `<td class="pipe-cell" data-i="${i}" data-j="${j}"></td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+        <p class="lab__caption">순차 실행이면 3×5 = <b>15박자</b>. 파이프라인은 몇 박자에 끝날까요?</p>
+      </div>`;
+
+    const cyc = el.querySelector('.pipe-cycle');
+    const btn = el.querySelector('.pipe-next');
+    const cap = el.querySelector('.lab__caption');
+    const cells = el.querySelectorAll('.pipe-cell');
+
+    function render() {
+      const live = [];
+      cells.forEach((c) => {
+        const i = +c.dataset.i, j = +c.dataset.j;
+        const at = i + j; // 이 칸이 활성인 사이클
+        c.classList.toggle('pipe-cell--on', cycle === at);
+        c.classList.toggle('pipe-cell--done', cycle > at);
+        c.textContent = cycle >= at ? ST[j] : '';
+        if (cycle === at) live.push(`명령${i + 1}=${ST[j]}`);
+      });
+      if (cycle < 0) {
+        cyc.textContent = '시작 전';
+        btn.textContent = '▸ 다음 박자';
+      } else if (cycle >= LAST) {
+        cyc.textContent = `사이클 ${cycle + 1} — 완료!`;
+        btn.textContent = '↻ 처음부터';
+        cap.innerHTML = `명령 3개가 단 <b>${LAST + 1}박자</b>에 끝! (순차였다면 15박자) — 겹침의 힘입니다.`;
+      } else {
+        cyc.textContent = `사이클 ${cycle + 1}`;
+        cap.innerHTML = live.join(' · ') + ' — <b>같은 박자에 동시!</b>';
+      }
+    }
+    btn.addEventListener('click', () => {
+      cycle = cycle >= LAST ? -1 : cycle + 1;
+      if (cycle < 0) cap.innerHTML = '순차 실행이면 3×5 = <b>15박자</b>. 파이프라인은 몇 박자에 끝날까요?';
+      render();
+    });
+    render();
+  },
+
+  /* ── 가상 메모리: 주소 변환 + 페이지 폴트 체험 ── */
+  vm(el) {
+    const FRAMES = 6;
+    let table = { P0: 2, P1: null, P2: 0, P3: 4 }; // null = 디스크
+    let busy = false, faults = 0;
+
+    el.innerHTML = `
+      <div class="lab lab--vm">
+        <div class="vm-req">
+          <span class="vm-req__label">프로그램 접근 →</span>
+          ${Object.keys(table).map(p => `<button class="vm-page" data-p="${p}">${p}</button>`).join('')}
+        </div>
+        <div class="vm-frames">${Array.from({ length: FRAMES }, (_, f) => `<span class="vm-frame" data-f="${f}">F${f}</span>`).join('')}</div>
+        <div class="vm-disk">💾 디스크(스왑) <span class="vm-disk__light">●</span></div>
+        <p class="lab__caption">페이지를 눌러 보세요 — 매핑된 것과 디스크에 있는 것의 차이!</p>
+      </div>`;
+
+    const cap = el.querySelector('.lab__caption');
+    const diskLight = el.querySelector('.vm-disk__light');
+
+    function paintFrames(hot) {
+      el.querySelectorAll('.vm-frame').forEach((fr) => {
+        const f = +fr.dataset.f;
+        const owner = Object.keys(table).find(p => table[p] === f);
+        fr.textContent = owner ? `F${f}·${owner}` : `F${f}`;
+        fr.classList.toggle('vm-frame--used', !!owner);
+        fr.classList.toggle('vm-frame--hot', f === hot);
+      });
+    }
+
+    function access(p, btn) {
+      if (busy) return;
+      el.querySelectorAll('.vm-page').forEach(b => b.classList.toggle('vm-page--on', b === btn));
+      const f = table[p];
+      if (f != null) {
+        paintFrames(f);
+        cap.innerHTML = `<b class="one">변환 성공</b> — MMU: ${p}(가상) → <b>F${f}</b>(물리). 프로그램은 이 과정을 모릅니다.`;
+      } else {
+        busy = true; faults++;
+        paintFrames(-1);
+        cap.innerHTML = `<b>⚠ 페이지 폴트!</b> ${p}는 RAM에 없음 → 운영체제가 디스크에서 가져오는 중…`;
+        diskLight.classList.add('vm-disk--busy');
+        setTimeout(() => {
+          diskLight.classList.remove('vm-disk--busy');
+          // 빈 프레임 찾아 적재
+          const used = new Set(Object.values(table).filter(v => v != null));
+          let free = 0; while (used.has(free)) free++;
+          table[p] = free;
+          paintFrames(free);
+          cap.innerHTML = `디스크에서 ${p}를 <b>F${free}</b>에 적재 + 페이지 테이블 갱신 — 다음부턴 즉시 변환! (폴트 ${faults}회)`;
+          busy = false;
+        }, 1100);
+      }
+    }
+    el.querySelectorAll('.vm-page').forEach(b => b.addEventListener('click', () => access(b.dataset.p, b)));
+    paintFrames(-1);
+  },
 };

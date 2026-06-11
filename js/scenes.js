@@ -186,9 +186,17 @@
         200, 130, 'middle')}
 
       ${hot('alu', 'ALU',
-        `<rect class="hot__shape" x="310" y="86" width="180" height="160" rx="4" fill="#1a2030" stroke="${C.gold}"/>
-         <path d="M340 110 L460 110 L440 200 L360 200 Z" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>`,
-        400, 158, 'middle')}
+        `<rect class="hot__shape" x="310" y="86" width="180" height="80" rx="4" fill="#1a2030" stroke="${C.gold}"/>
+         <path d="M350 96 L450 96 L437 132 L363 132 Z" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>`,
+        400, 152, 'middle')}
+
+      ${hot('pipeline', '파이프라인',
+        `<rect class="hot__shape" x="310" y="186" width="180" height="60" rx="4" fill="#14202c" stroke="${C.ln2}"/>
+         ${['IF','ID','EX','ME','WB'].map((s,i) => `
+           <rect x="${318+i*34}" y="196" width="28" height="20" rx="2" fill="${C.pan}" stroke="${C.cyanD}"/>
+           <text x="${332+i*34}" y="210" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.cyan}">${s}</text>`).join('')}
+         ${flow('M318 226 H486', C.cyan, 3, 1.8, 2)}`,
+        400, 238, 'middle')}
 
       ${hot('register', '레지스터',
         `<rect class="hot__shape" x="110" y="186" width="180" height="60" rx="4" fill="#14202c" stroke="${C.ln2}"/>
@@ -389,9 +397,14 @@
       <rect x="60" y="70" width="480" height="280" rx="6" fill="${C.pcb}" stroke="${C.pcbL}"/>
       ${(function(){let s='';for(let r=0;r<4;r++)for(let c=0;c<8;c++){s+=`<rect x="${84+c*56}" y="${94+r*60}" width="40" height="40" rx="3" fill="#13202b" stroke="${C.ln2}"/>`;}return s;})()}
       ${hot('memcell', '메모리 셀',
-        `<rect class="hot__shape" x="82" y="92" width="44" height="44" rx="3" fill="#1a2c20" stroke="${C.gold}" stroke-width="2"/>`,
-        300, 372, 'middle')}
-      <text x="300" y="372" text-anchor="middle" class="s-label" fill="${C.dim}">한 칸(셀) = 비트 하나 →</text>
+        `<rect class="hot__shape" x="82" y="92" width="44" height="44" rx="3" fill="#1a2c20" stroke="${C.gold}" stroke-width="2"/>
+         <path d="M104 136 Q104 168 84 188" fill="none" stroke="${C.gold}" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`,
+        60, 378)}
+
+      ${hot('virtualmem', '가상 메모리 · MMU',
+        `<rect class="hot__shape" x="300" y="356" width="240" height="44" rx="5" fill="#16222e" stroke="${C.cyanD}" stroke-width="1.5"/>
+         <text x="420" y="374" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">가상 주소 → 물리 주소</text>`,
+        420, 390, 'middle')}
     `),
 
     /* ─── 제어장치 ─── */
@@ -823,6 +836,62 @@
         <text x="${138+(i%4)*116}" y="${172+Math.floor(i/4)*92}" text-anchor="middle" font-family="monospace" font-size="15" fill="${C.ink}">${v}</text>`).join('')}
       <text x="300" y="334" text-anchor="middle" class="s-label" fill="${C.dim}">프로그램이 자유롭게 값을 담아 쓰는 작업용 칸들</text>
     `),
+
+    /* ─── 파이프라인: 5단계 사선 중첩 ─── */
+    pipeline: (function () {
+      const ST = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+      const COLS = [C.cyan, C.gold, C.grn, '#e0916f', '#b08ae0'];
+      let head = '', rows = '';
+      ST.forEach((s, j) => {
+        head += `<text x="${150 + j * 80}" y="86" text-anchor="middle" font-family="monospace" font-size="11" fill="${COLS[j]}">${s}</text>`;
+      });
+      for (let i = 0; i < 3; i++) { // 명령 3개, 한 칸씩 밀려 시작
+        rows += `<text x="64" y="${136 + i * 64}" font-family="monospace" font-size="10" fill="${C.dim}">명령${i + 1}</text>`;
+        ST.forEach((s, j) => {
+          const x = 110 + j * 80 + i * 26, y = 112 + i * 64;
+          rows += `<rect x="${x}" y="${y}" width="66" height="38" rx="4" fill="${C.pan2}" stroke="${COLS[j]}" opacity="${i === 1 ? 1 : .75}"/>
+                   <text x="${x + 33}" y="${y + 24}" text-anchor="middle" font-family="monospace" font-size="9" fill="${COLS[j]}">${s}</text>`;
+        });
+      }
+      return svg(`${lbl(40, 40, 'PIPELINE · 단계가 겹쳐 흐른다')}
+        ${head}${rows}
+        <line x1="318" y1="100" x2="318" y2="320" stroke="${C.ink}" stroke-dasharray="3 5" opacity=".35"/>
+        <text x="318" y="336" text-anchor="middle" class="s-label" fill="${C.dim}">↑ 같은 박자: 명령1=EX · 명령2=ID · 명령3=IF 동시 진행</text>
+        <text x="300" y="392" text-anchor="middle" class="s-label" fill="#e0916f">단, 앞 명령의 결과를 바로 쓰면? → 해저드(전공 노트)</text>`);
+    })(),
+
+    /* ─── 가상 메모리: 페이지 → MMU → 프레임 매핑 ─── */
+    virtualmem: (function () {
+      const MAP = [['P0', 2, C.cyan], ['P1', -1, '#e0916f'], ['P2', 0, C.grn], ['P3', 4, C.gold]];
+      let pages = '', frames = '', wires = '';
+      MAP.forEach(([p, f, col], i) => {
+        const py = 96 + i * 56;
+        pages += `<rect x="60" y="${py}" width="96" height="40" rx="4" fill="${C.pan2}" stroke="${col}"/>
+                  <text x="108" y="${py + 25}" text-anchor="middle" font-family="monospace" font-size="11" fill="${col}">${p}</text>`;
+        if (f >= 0) {
+          const fy = 96 + f * 44;
+          wires += `<path d="M156 ${py + 20} C240 ${py + 20} 300 ${fy + 18} 396 ${fy + 18}" fill="none" stroke="${col}" stroke-width="1.5" opacity=".75"/>
+                    ${flow(`M158 ${py + 20} C240 ${py + 20} 300 ${fy + 18} 394 ${fy + 18}`, col, 1, 2.2, 2.5)}`;
+        } else {
+          wires += `<path d="M156 ${py + 20} C230 ${py + 20} 250 360 300 372" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="4 4" opacity=".8"/>`;
+        }
+      });
+      for (let f = 0; f < 6; f++) {
+        const fy = 96 + f * 44;
+        const owner = MAP.find(([, m]) => m === f);
+        frames += `<rect x="396" y="${fy}" width="144" height="34" rx="4" fill="${owner ? '#13202b' : C.pan}" stroke="${owner ? owner[2] : C.ln}" ${owner ? '' : 'stroke-dasharray="3 4"'}/>
+                   <text x="468" y="${fy + 22}" text-anchor="middle" font-family="monospace" font-size="10" fill="${owner ? owner[2] : C.fnt}">F${f}${owner ? ' ← ' + owner[0] : ' (빈 프레임)'}</text>`;
+      }
+      return svg(`${lbl(40, 40, 'VIRTUAL MEMORY · 주소 변환 지도')}
+        <text x="108" y="82" text-anchor="middle" class="s-label" fill="${C.dim}">가상 페이지</text>
+        <text x="468" y="82" text-anchor="middle" class="s-label" fill="${C.dim}">물리 프레임 (RAM)</text>
+        <rect x="226" y="160" width="120" height="64" rx="6" fill="${C.metal}" stroke="${C.gold}"/>
+        <text x="286" y="188" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">MMU</text>
+        <text x="286" y="206" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">페이지 테이블</text>
+        ${pages}${frames}${wires}
+        <rect x="300" y="362" width="140" height="36" rx="4" fill="#1a1410" stroke="#e0916f"/>
+        <text x="370" y="384" text-anchor="middle" font-family="monospace" font-size="9" fill="#e0916f">디스크(스왑) — P1은 여기에</text>`);
+    })(),
   };
 
   window.SCENES = SCENES;

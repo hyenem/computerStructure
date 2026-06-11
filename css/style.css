@@ -664,6 +664,57 @@ body::before {
 }
 .pn-swap:hover { background: rgba(240,191,90,.15); transform: translateY(-1px); }
 
+/* 파이프라인 랩 */
+.pipe-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.pipe-cycle { font-family: var(--mono); font-size: 11px; color: var(--gold); }
+.pipe-next {
+  font-family: var(--mono); font-size: 12px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--cyan-dk); border-radius: var(--r);
+  padding: 7px 13px; cursor: pointer; transition: all .15s;
+}
+.pipe-next:hover { background: rgba(86,214,207,.1); color: var(--cyan); }
+.pipe-grid { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
+.pipe-grid th { color: var(--faint); font-weight: 500; padding: 4px 0; font-size: 9px; letter-spacing: 1px; }
+.pipe-name { color: var(--dim); padding: 0 6px 0 0; white-space: nowrap; }
+.pipe-cell {
+  border: 1px solid var(--line); height: 30px; text-align: center;
+  color: var(--faint); transition: all .2s; width: 18%;
+}
+.pipe-cell--on {
+  background: rgba(240,191,90,.14); border-color: var(--gold); color: var(--gold); font-weight: 600;
+}
+.pipe-cell--done { background: rgba(134,230,162,.05); color: var(--zero); }
+
+/* 가상 메모리 랩 */
+.vm-req { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.vm-req__label { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+.vm-page {
+  width: 40px; height: 30px; font-family: var(--mono); font-size: 12px;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line-2);
+  border-radius: var(--r); cursor: pointer; transition: all .15s;
+}
+.vm-page:hover { border-color: var(--cyan-dk); color: var(--cyan); }
+.vm-page--on { border-color: var(--gold); color: var(--gold); }
+.vm-frames { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.vm-frame {
+  flex: 1; min-width: 52px; height: 30px; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 10px; border-radius: var(--r);
+  color: var(--faint); background: var(--bg); border: 1px dashed var(--line-2);
+  transition: all .2s;
+}
+.vm-frame--used { border-style: solid; color: var(--dim); }
+.vm-frame--hot {
+  border-color: var(--green); color: var(--green);
+  box-shadow: 0 0 10px rgba(134,230,162,.4);
+}
+.vm-disk {
+  font-family: var(--mono); font-size: 10.5px; color: var(--dim);
+  border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 7px 11px; display: flex; align-items: center; gap: 8px;
+}
+.vm-disk__light { color: var(--zero); transition: color .2s; }
+.vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;
