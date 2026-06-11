@@ -198,6 +198,9 @@ body::before {
 }
 .stage__frame.is-zooming { transform: scale(2.7); opacity: 0; }
 .stage__frame.is-entering { transform: scale(1.14); opacity: 0; transition: none; }
+/* 위로 빠져나올 때: 화면이 줄어들며(카메라 후퇴) 상위 도식이 받아낸다 */
+.stage__frame.is-zoomout { transform: scale(.32); opacity: 0; }
+.stage__frame.is-entering-out { transform: scale(.88); opacity: 0; transition: none; }
 
 .board {
   border: 1px solid var(--line-2);
@@ -675,6 +678,7 @@ body::before {
   .stage { grid-area: stage; padding: 24px 16px; }
   .panel { grid-area: panel; border-left: none; border-top: 1px solid var(--line); }
   .stage__frame.is-zooming { transform: scale(1.8); }
+  .stage__frame.is-zoomout { transform: scale(.5); }
 }
 @media (max-width: 520px) {
   .board__grid { grid-template-columns: 1fr 1fr; }

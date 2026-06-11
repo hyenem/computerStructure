@@ -110,8 +110,8 @@
 
     const hotCount = stageFrame.querySelectorAll('[data-kid]').length;
     stageHint.textContent = hotCount
-      ? '▸ 도식 위의 부품을 클릭해 그 안으로 들어가세요'
-      : '● 이 줄기의 가장 깊은 곳입니다';
+      ? `▸ 들어갈 수 있는 부품 ${hotCount}곳 — 클릭해 더 깊이`
+      : '● 이 줄기의 가장 깊은 곳입니다 — 위로 올라가 다른 길을 탐험하세요';
   }
 
   // 장면(SVG)이 없는 노드용 카드 폴백
@@ -164,28 +164,68 @@
     panelScroll.scrollTop = 0;
   }
 
+  // ── 탐험 진행률 (방문 노드 기록) ──────────────────────────
+  const TOTAL = Object.keys(NODES).length;
+  let visited = new Set([ROOT]);
+  try {
+    const saved = JSON.parse(localStorage.getItem('cs_visited') || '[]');
+    saved.forEach((id) => { if (NODES[id]) visited.add(id); });
+  } catch (e) {}
+  function markVisited(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    try { localStorage.setItem('cs_visited', JSON.stringify([...visited])); } catch (e) {}
+  }
+
+  // ── URL 해시 ↔ 경로 동기화 (새로고침·공유·뒤로가기) ───────
+  function pathFromHash() {
+    const ids = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+    const p = [ROOT];
+    for (const id of ids) {
+      const parent = NODES[p[p.length - 1]];
+      if (parent && (parent.kids || []).includes(id)) p.push(id);
+      else break; // 유효하지 않으면 거기까지만
+    }
+    return p;
+  }
+  let firstSync = true;
+  function syncHash() {
+    const want = path.length > 1 ? '#/' + path.slice(1).join('/') : '#/';
+    const wasFirst = firstSync;
+    firstSync = false;
+    if (location.hash === want) return;
+    // 첫 렌더는 교체, 이후 탐험은 히스토리에 쌓아 브라우저 뒤로가기 지원
+    if (wasFirst) history.replaceState(null, '', want);
+    else history.pushState(null, '', want);
+  }
+
   // ── 렌더: 게이지 / 깊이태그 / 뒤로버튼 ────────────────────
   function renderChrome() {
     const node = current();
     gaugeMarker.style.top = gaugePercent(node.scaleM) + '%';
     gaugeReadout.textContent = node.scale;
-    depthTag.textContent = 'L' + node.depth;
+    depthTag.textContent = `L${node.depth} · 탐험 ${visited.size}/${TOTAL}`;
     btnBack.disabled = path.length <= 1;
   }
 
-  // ── 전체 렌더 + 진입 애니메이션 ───────────────────────────
-  function render(entering) {
+  // ── 전체 렌더 + 진입/복귀 애니메이션 ──────────────────────
+  // mode: false(없음) | 'in'(안으로) | 'out'(위로 빠져나옴)
+  function render(mode) {
+    if (mode === true) mode = 'in';
+    markVisited(path[path.length - 1]);
+    syncHash();
     renderBreadcrumb();
     renderStage();
     renderPanel();
     renderChrome();
-    if (entering && !reduceMotion) {
-      stageFrame.classList.remove('is-zooming');
+    if (mode && !reduceMotion) {
+      stageFrame.classList.remove('is-zooming', 'is-zoomout');
       stageFrame.style.transformOrigin = '50% 50%';
-      stageFrame.classList.add('is-entering');
+      const cls = mode === 'out' ? 'is-entering-out' : 'is-entering';
+      stageFrame.classList.add(cls);
       // 강제 리플로우 후 클래스 제거로 트랜지션 트리거
       void stageFrame.offsetWidth;
-      requestAnimationFrame(() => stageFrame.classList.remove('is-entering'));
+      requestAnimationFrame(() => stageFrame.classList.remove(cls));
     }
     locked = false;
   }
@@ -219,21 +259,34 @@
     setTimeout(() => { if (locked) finish(); }, 600);
   }
 
+  // ── 위로 빠져나오기: 화면이 줄어들며 상위로 (줌아웃) ──────
+  function zoomOutTo(newPath) {
+    if (locked) return;
+    locked = true;
+    if (reduceMotion) { path = newPath; render(false); return; }
+    stageFrame.style.transformOrigin = '50% 50%';
+    stageFrame.classList.add('is-zoomout');
+    const finish = () => {
+      stageFrame.removeEventListener('transitionend', finish);
+      path = newPath;
+      render('out');
+    };
+    stageFrame.addEventListener('transitionend', finish);
+    setTimeout(() => { if (locked) finish(); }, 600); // 안전망
+  }
+
   // ── 위로 / 처음으로 / 빵부스러기 점프 ─────────────────────
   function goUp() {
     if (path.length <= 1 || locked) return;
-    path.pop();
-    render(true);
+    zoomOutTo(path.slice(0, -1));
   }
   function goHome() {
     if (locked || path.length === 1) return;
-    path = [ROOT];
-    render(true);
+    zoomOutTo([ROOT]);
   }
   function jumpTo(index) {
     if (locked) return;
-    path = path.slice(0, index + 1);
-    render(true);
+    zoomOutTo(path.slice(0, index + 1));
   }
 
   // ── 이벤트 ────────────────────────────────────────────────
@@ -268,7 +321,14 @@
   if (wordmark) wordmark.addEventListener('click', showIntro);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !intro.hidden) hideIntro(); });
 
+  // ── 브라우저 뒤로/앞으로 (해시 변경) ──────────────────────
+  window.addEventListener('hashchange', () => {
+    const p = pathFromHash();
+    if (p.join('/') !== path.join('/')) { path = p; render(false); }
+  });
+
   // ── 시작 ──────────────────────────────────────────────────
   buildGaugeTicks();
+  path = pathFromHash(); // 공유된 URL이면 그 위치에서 시작
   render(false);
 })();
