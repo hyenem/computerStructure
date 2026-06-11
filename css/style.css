@@ -539,6 +539,47 @@ body::before {
   100% { box-shadow: 0 0 0 12px rgba(134,230,162,0); }
 }
 
+/* 캐시 적중/실패 랩 */
+.cache-req { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.cache-req__label { font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-right: 2px; }
+.cache-addr {
+  width: 34px; height: 30px; font-family: var(--mono); font-size: 13px;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line-2);
+  border-radius: var(--r); cursor: pointer; transition: all .15s;
+}
+.cache-addr:hover { border-color: var(--cyan-dk); color: var(--cyan); }
+.cache-addr--on { border-color: var(--gold); color: var(--gold); }
+.cache-rows { display: grid; gap: 10px; }
+.cache-tier {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line-2); border-radius: 6px; padding: 10px 12px;
+  background: var(--panel-2);
+}
+.cache-tier__name { font-family: var(--mono); font-size: 9.5px; color: var(--dim); width: 112px; flex-shrink: 0; }
+.cache-slots, .cache-ramline { display: flex; gap: 6px; flex: 1; }
+.cache-slot, .cache-ram {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 12px; border-radius: var(--r);
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line-2);
+  transition: all .2s;
+}
+.cache-slot--empty { color: var(--faint); border-style: dashed; }
+.cache-slot--hit {
+  color: #06120c; background: var(--green); border-color: var(--green);
+  box-shadow: 0 0 12px rgba(134,230,162,.55);
+}
+.cache-slot--fill { border-color: var(--gold); color: var(--gold); animation: ffflash .5s ease; }
+.cache-ram { color: var(--dim); }
+.cache-ram--read {
+  color: var(--gold); border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(240,191,90,.45); animation: throb 0.9s ease;
+}
+.cache-verdict { font-family: var(--mono); font-size: 11px; width: 52px; text-align: right; }
+.cache-verdict--hit { color: var(--green); }
+.cache-verdict--miss { color: #e0916f; }
+.cache-score { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: center; }
+.cache-score b { color: var(--ink); }
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;

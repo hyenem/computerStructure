@@ -297,4 +297,89 @@ const LABS = {
     });
     render(false);
   },
+
+  /* ── 캐시 적중/실패: 주소 요청 → HIT(즉시) / MISS(RAM 왕복 후 적재) ── */
+  cache(el) {
+    const ADDRS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const SIZE = 3;            // 캐시 칸 수 (작아야 MISS를 자주 체험)
+    let cache = ['A', 'B'];    // 초기 적재 (FIFO)
+    let hits = 0, misses = 0, busy = false;
+
+    el.innerHTML = `
+      <div class="lab lab--cache">
+        <div class="cache-req">
+          <span class="cache-req__label">CPU 요청 →</span>
+          ${ADDRS.map(a => `<button class="cache-addr" data-a="${a}">${a}</button>`).join('')}
+        </div>
+        <div class="cache-rows">
+          <div class="cache-tier" data-tier="cache">
+            <span class="cache-tier__name">캐시 (${SIZE}칸 · 빠름)</span>
+            <div class="cache-slots"></div>
+            <span class="cache-verdict"></span>
+          </div>
+          <div class="cache-tier" data-tier="ram">
+            <span class="cache-tier__name">RAM (전부 있음 · 느림)</span>
+            <div class="cache-ramline">${ADDRS.map(a => `<span class="cache-ram" data-r="${a}">${a}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="cache-score">
+          적중 <b class="one" data-s="hit">0</b> · 실패 <b data-s="miss">0</b>
+        </div>
+        <p class="lab__caption">주소를 눌러 보세요. 같은 주소를 다시 부르면? 처음 부르는 주소는?</p>
+      </div>`;
+
+    const slots = el.querySelector('.cache-slots');
+    const verdict = el.querySelector('.cache-verdict');
+    const cap = el.querySelector('.lab__caption');
+    const sHit = el.querySelector('[data-s="hit"]');
+    const sMiss = el.querySelector('[data-s="miss"]');
+
+    function renderSlots(flashAddr, missAddr) {
+      slots.innerHTML = '';
+      for (let i = 0; i < SIZE; i++) {
+        const a = cache[i];
+        const d = document.createElement('span');
+        d.className = 'cache-slot'
+          + (a ? '' : ' cache-slot--empty')
+          + (a && a === flashAddr ? ' cache-slot--hit' : '')
+          + (a && a === missAddr ? ' cache-slot--fill' : '');
+        d.textContent = a || '·';
+        slots.appendChild(d);
+      }
+      sHit.textContent = hits; sMiss.textContent = misses;
+    }
+
+    function request(a, btn) {
+      if (busy) return;
+      el.querySelectorAll('.cache-addr').forEach(b => b.classList.toggle('cache-addr--on', b === btn));
+      if (cache.includes(a)) {
+        hits++;
+        verdict.textContent = '✓ HIT';
+        verdict.className = 'cache-verdict cache-verdict--hit';
+        renderSlots(a, null);
+        cap.innerHTML = `<b class="one">적중!</b> 「${a}」가 캐시에 있어 <b>즉시</b> 응답 — RAM까지 갈 필요 없음`;
+      } else {
+        busy = true;
+        misses++;
+        verdict.textContent = '✗ MISS';
+        verdict.className = 'cache-verdict cache-verdict--miss';
+        renderSlots(null, null);
+        cap.innerHTML = `<b>실패…</b> 캐시에 「${a}」가 없음 → <b>느린 RAM</b>까지 다녀오는 중`;
+        const ramEl = el.querySelector(`.cache-ram[data-r="${a}"]`);
+        ramEl.classList.add('cache-ram--read');
+        setTimeout(() => {
+          ramEl.classList.remove('cache-ram--read');
+          const evicted = cache.length >= SIZE ? cache.shift() : null; // FIFO 교체
+          cache.push(a);
+          renderSlots(null, a);
+          cap.innerHTML = `RAM에서 가져와 <b>캐시에 적재</b>${evicted ? ` (자리가 없어 「${evicted}」 교체)` : ''} — 다음번 「${a}」는 적중!`;
+          busy = false;
+        }, 900);
+      }
+    }
+
+    el.querySelectorAll('.cache-addr').forEach(b =>
+      b.addEventListener('click', () => request(b.dataset.a, b)));
+    renderSlots(null, null);
+  },
 };
