@@ -425,6 +425,55 @@
     zoomOutTo(path.slice(0, index + 1));
   }
 
+  // ── 전체 지도 · 목차 ──────────────────────────────────────
+  const btnMap = $('btnMap');
+  let mapEl = null;
+  function closeMap() { if (mapEl) { mapEl.remove(); mapEl = null; } }
+  function showMap() {
+    closeMap();
+    const cur = path[path.length - 1];
+    const labCount = Object.keys(NODES).filter((id) => NODES[id].lab).length;
+    function walk(id) {
+      const n = NODES[id];
+      const kids = (n.kids || []).map(walk).join('');
+      const isCur = id === cur, seen = visited.has(id);
+      return `<li>
+        <button class="map__item${isCur ? ' map__item--cur' : ''}${seen ? ' map__item--seen' : ''}" data-m="${id}">
+          <span class="map__glyph">${n.glyph || '◆'}</span>
+          <span class="map__title">${n.title}</span>
+          ${n.lab ? '<span class="map__lab" title="미니랩 있음">🧪</span>' : ''}
+          <span class="map__meta">L${n.depth} · ${n.scale}</span>
+          <span class="map__check">${isCur ? '📍' : (seen ? '✓' : '')}</span>
+        </button>
+        ${kids ? `<ul>${kids}</ul>` : ''}
+      </li>`;
+    }
+    mapEl = document.createElement('div');
+    mapEl.className = 'intro map';
+    mapEl.innerHTML = `
+      <div class="intro__card map__card">
+        <div class="map__head">
+          <h2 class="map__h">🗺 전체 지도 · 목차</h2>
+          <span class="map__prog">탐험 ${visited.size}/${TOTAL} · 미니랩 ${labCount}곳</span>
+          <button class="map__close" aria-label="닫기">✕</button>
+        </div>
+        <div class="map__scroll"><ul class="map__tree">${walk(ROOT)}</ul></div>
+        <div class="map__foot">노드를 클릭하면 그곳으로 점프 · ✓ 방문함 · 📍 현재 위치</div>
+      </div>`;
+    document.body.appendChild(mapEl);
+    mapEl.querySelector('.map__close').addEventListener('click', closeMap);
+    mapEl.addEventListener('click', (e) => { if (e.target === mapEl) closeMap(); });
+    mapEl.querySelectorAll('.map__item').forEach((b) => b.addEventListener('click', () => {
+      const p = findPath(b.dataset.m);
+      closeMap();
+      if (p && b.dataset.m !== cur) { path = p; render('in'); }
+    }));
+    // 현재 위치가 보이도록 스크롤
+    const curEl = mapEl.querySelector('.map__item--cur');
+    if (curEl) curEl.scrollIntoView({ block: 'center' });
+  }
+  btnMap.addEventListener('click', showMap);
+
   // ── 이벤트 ────────────────────────────────────────────────
   btnBack.addEventListener('click', goUp);
   btnHome.addEventListener('click', goHome);
@@ -434,8 +483,15 @@
     stageHint.textContent = '⚙ 표현 모드 · 언어 설정은 다음 업데이트에서 열립니다';
   });
   document.addEventListener('keydown', (e) => {
+    if (mapEl) { // 지도 열림: Esc로 닫기만
+      if (e.key === 'Escape') { e.preventDefault(); closeMap(); }
+      return;
+    }
     const introEl = document.getElementById('intro');
     if (introEl && !introEl.hidden) return; // 인트로 열려있으면 네비 무시
+    // 입력 요소나 키보드 미니랩에 포커스가 있으면 단축키 무시
+    if (e.target.closest && e.target.closest('input, select, textarea, .key-stage')) return;
+    if (e.key === 'm' || e.key === 'M') { showMap(); return; }
     if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'ArrowLeft') {
       e.preventDefault(); goUp();
     }
