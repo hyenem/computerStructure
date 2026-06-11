@@ -567,6 +567,121 @@ const LABS = {
     paintFrames(-1);
   },
 
+  /* ── 키보드 인터럽트: 진짜 키를 눌러 신호의 여정을 본다 ── */
+  keylab(el) {
+    el.innerHTML = `
+      <div class="lab lab--key">
+        <div class="key-stage" tabindex="0">
+          <span class="key-hint">여기를 클릭(터치)한 뒤, 아무 키나 눌러 보세요</span>
+        </div>
+        <div class="key-flow">
+          <span class="key-node">⌨ 키보드</span>
+          <span class="key-irq">IRQ ⚡</span>
+          <span class="key-node">CPU</span>
+        </div>
+        <div class="key-rows">
+          <div class="key-row"><span>키</span><b data-k="key">—</b></div>
+          <div class="key-row"><span>스캔코드(물리 위치)</span><b data-k="code">—</b></div>
+          <div class="key-row"><span>문자 번호(ASCII/유니코드)</span><b data-k="num">—</b></div>
+          <div class="key-row"><span>비트</span><b data-k="bits">—</b></div>
+        </div>
+        <p class="lab__caption">키 하나 = 인터럽트 한 번 + 비트 한 묶음. 입력의 정체입니다.</p>
+      </div>`;
+    const stage = el.querySelector('.key-stage');
+    const hint = el.querySelector('.key-hint');
+    const irq = el.querySelector('.key-irq');
+    const K = (k) => el.querySelector(`[data-k="${k}"]`);
+    const cap = el.querySelector('.lab__caption');
+
+    stage.addEventListener('click', () => stage.focus());
+    stage.addEventListener('keydown', (e) => {
+      e.preventDefault();
+      hint.textContent = `「${e.key === ' ' ? 'Space' : e.key}」`;
+      irq.classList.remove('key-irq--fire'); void irq.offsetWidth; irq.classList.add('key-irq--fire');
+      K('key').textContent = e.key === ' ' ? 'Space' : e.key;
+      K('code').textContent = e.code || '—';
+      if (e.key.length === 1) {
+        const n = e.key.codePointAt(0);
+        K('num').textContent = n + (n < 128 ? ' (ASCII)' : ' (유니코드)');
+        K('bits').textContent = n.toString(2).padStart(8, '0');
+        cap.innerHTML = `「${e.key}」가 키보드 컨트롤러 → <b>인터럽트</b> → 드라이버를 거쳐 숫자 <b>${n}</b>이 됐습니다.`;
+      } else {
+        K('num').textContent = '— (제어 키)';
+        K('bits').textContent = '—';
+        cap.innerHTML = `「${e.key}」는 문자가 아닌 <b>제어 키</b> — 그래도 인터럽트와 스캔코드는 똑같이 발생합니다.`;
+      }
+    });
+  },
+
+  /* ── 명령어 인코더: 조립하면 비트가 실시간으로 바뀐다 ── */
+  encode(el) {
+    const OPS = { ADDI: '000', ANDI: '111', ORI: '110' };
+    let op = 'ADDI', rd = 1, rs = 2, imm = 7;
+    el.innerHTML = `
+      <div class="lab lab--enc">
+        <div class="enc-controls">
+          <label>연산 <select data-e="op">${Object.keys(OPS).map(o => `<option>${o}</option>`).join('')}</select></label>
+          <label>결과 <select data-e="rd">${[1,2,3,4].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></label>
+          <label>입력 <select data-e="rs">${[1,2,3,4].map(r => `<option value="${r}" ${r===2?'selected':''}>R${r}</option>`).join('')}</select></label>
+          <label class="enc-imm">상수 <input type="range" min="0" max="31" value="7" data-e="imm"/> <b data-e="immv">7</b></label>
+        </div>
+        <div class="enc-asm"></div>
+        <div class="enc-bits">
+          <span class="enc-f enc-f--imm"></span><span class="enc-f enc-f--rs"></span><span class="enc-f enc-f--fn"></span><span class="enc-f enc-f--rd"></span><span class="enc-f enc-f--op">0010011</span>
+        </div>
+        <div class="enc-legend">
+          <span class="enc-f--imm">즉시값</span><span class="enc-f--rs">rs1</span><span class="enc-f--fn">funct</span><span class="enc-f--rd">rd</span><span class="enc-f--op">opcode</span>
+        </div>
+        <p class="lab__caption">컨트롤을 바꿔 보세요 — 어셈블리와 비트가 1:1로 따라 움직입니다.</p>
+      </div>`;
+    const $ = (k) => el.querySelector(`[data-e="${k}"]`);
+    const asm = el.querySelector('.enc-asm');
+    const f = (c) => el.querySelector(`.enc-bits .enc-f--${c}`);
+    function render() {
+      asm.innerHTML = `<b>${op}</b> R${rd}, R${rs}, ${imm}`;
+      f('imm').textContent = imm.toString(2).padStart(12, '0');
+      f('rs').textContent = rs.toString(2).padStart(5, '0');
+      f('fn').textContent = OPS[op];
+      f('rd').textContent = rd.toString(2).padStart(5, '0');
+      $('immv').textContent = imm;
+    }
+    $('op').addEventListener('change', (e) => { op = e.target.value; render(); });
+    $('rd').addEventListener('change', (e) => { rd = +e.target.value; render(); });
+    $('rs').addEventListener('change', (e) => { rs = +e.target.value; render(); });
+    $('imm').addEventListener('input', (e) => { imm = +e.target.value; render(); });
+    render();
+  },
+
+  /* ── 부팅 시퀀스: 전원 버튼부터 로그인까지 한 단계씩 ── */
+  boot(el) {
+    const STEPS = [
+      ['⏻ 전원 ON', 'PSU가 전압을 안정시키고 "Power Good" 신호를 올립니다.'],
+      ['리셋 벡터', 'CPU가 깨어나 ROM의 고정 주소에서 <b>첫 명령</b>을 가져옵니다 — PC의 출생지.'],
+      ['POST', '펌웨어가 메모리를 훑고 장치를 점검합니다 — 삑! 소리의 정체.'],
+      ['부트로더', '저장장치 맨 앞의 작은 프로그램을 RAM에 복사하고 점프합니다.'],
+      ['OS 커널', '커널이 가상 메모리·인터럽트를 켜고 첫 프로세스를 시작 — 로그인 화면!'],
+    ];
+    let i = -1;
+    el.innerHTML = `
+      <div class="lab lab--boot">
+        <div class="boot-steps">${STEPS.map((s, j) => `<span class="boot-step" data-b="${j}">${s[0]}</span>`).join('<span class="boot-sep">→</span>')}</div>
+        <button class="fdx-next boot-next">▸ 다음 단계</button>
+        <p class="lab__caption">전원 버튼을 누른 직후부터, 한 단계씩 따라가 보세요.</p>
+      </div>`;
+    const chips = el.querySelectorAll('.boot-step');
+    const btn = el.querySelector('.boot-next');
+    const cap = el.querySelector('.lab__caption');
+    btn.addEventListener('click', () => {
+      i = i >= STEPS.length - 1 ? 0 : i + 1;
+      chips.forEach((c, j) => {
+        c.classList.toggle('boot-step--on', j === i);
+        c.classList.toggle('boot-step--done', j < i);
+      });
+      btn.textContent = i >= STEPS.length - 1 ? '↻ 처음부터' : '▸ 다음 단계';
+      cap.innerHTML = `<b>${STEPS[i][0]}</b> — ${STEPS[i][1]}`;
+    });
+  },
+
   /* ── NAND 조립: NAND만으로 NOT·AND·OR 만들기 ── */
   nandlab(el) {
     const nand = (x, y) => (x & y) ? 0 : 1;

@@ -749,6 +749,82 @@ body::before {
 .vm-disk__light { color: var(--zero); transition: color .2s; }
 .vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
 
+/* 키보드 인터럽트 랩 */
+.key-stage {
+  display: grid; place-items: center; min-height: 64px; cursor: pointer;
+  border: 1px dashed var(--cyan-dk); border-radius: 6px; background: var(--bg);
+  transition: border-color .15s; outline: none; margin-bottom: 12px;
+}
+.key-stage:focus { border-color: var(--gold); border-style: solid; }
+.key-hint { font-family: var(--mono); font-size: 12px; color: var(--dim); padding: 8px; text-align: center; }
+.key-stage:focus .key-hint { color: var(--gold); }
+.key-flow {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-bottom: 12px; font-family: var(--mono); font-size: 11px; color: var(--dim);
+}
+.key-irq { color: var(--zero); transition: color .15s; }
+.key-irq--fire { animation: irqfire .5s ease; color: var(--gold); }
+@keyframes irqfire { 0% { transform: scale(1.5); text-shadow: 0 0 12px var(--gold); } }
+.key-rows { display: grid; gap: 6px; }
+.key-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11.5px; color: var(--dim); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 7px 11px;
+}
+.key-row b { font-family: var(--mono); color: var(--cyan); }
+
+/* 명령어 인코더 랩 */
+.enc-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 14px; }
+.enc-controls label {
+  font-family: var(--mono); font-size: 10.5px; color: var(--dim);
+  display: flex; align-items: center; gap: 6px;
+}
+.enc-controls select {
+  font-family: var(--mono); font-size: 11px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r); padding: 4px 6px;
+}
+.enc-imm { flex: 1; min-width: 150px; }
+.enc-imm input { flex: 1; accent-color: var(--gold); }
+.enc-imm b { color: var(--gold); width: 20px; }
+.enc-asm {
+  font-family: var(--mono); font-size: 14px; color: var(--ink); text-align: center;
+  padding: 9px; border: 1px solid var(--line-2); border-radius: var(--r);
+  background: var(--bg); margin-bottom: 10px;
+}
+.enc-asm b { color: var(--cyan); }
+.enc-bits { display: flex; gap: 3px; }
+.enc-bits .enc-f {
+  font-family: var(--mono); font-size: 10.5px; text-align: center;
+  padding: 8px 0; border-radius: 3px; border: 1px solid; letter-spacing: .5px;
+}
+.enc-bits .enc-f--imm { flex: 12; background: #2a2210; border-color: var(--gold); color: var(--gold); }
+.enc-bits .enc-f--rs  { flex: 5; background: #10262c; border-color: var(--cyan); color: var(--cyan); }
+.enc-bits .enc-f--fn  { flex: 3; background: #16301f; border-color: var(--green); color: var(--green); }
+.enc-bits .enc-f--rd  { flex: 5; background: #10262c; border-color: var(--cyan); color: var(--cyan); }
+.enc-bits .enc-f--op  { flex: 7; background: #2c1a14; border-color: #e0916f; color: #e0916f; }
+.enc-legend { display: flex; gap: 3px; margin-top: 4px; }
+.enc-legend span { font-family: var(--mono); font-size: 8px; text-align: center; }
+.enc-legend .enc-f--imm { flex: 12; color: var(--gold-dk); }
+.enc-legend .enc-f--rs  { flex: 5; color: var(--cyan-dk); }
+.enc-legend .enc-f--fn  { flex: 3; color: #3f7a52; }
+.enc-legend .enc-f--rd  { flex: 5; color: var(--cyan-dk); }
+.enc-legend .enc-f--op  { flex: 7; color: #8a5a44; }
+
+/* 부팅 시퀀스 랩 */
+.boot-steps {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  justify-content: center; margin-bottom: 14px;
+}
+.boot-step {
+  font-family: var(--mono); font-size: 10px; color: var(--dim);
+  border: 1px solid var(--line-2); border-radius: 20px; padding: 6px 11px;
+  transition: all .2s;
+}
+.boot-step--on { color: var(--gold); border-color: var(--gold); background: rgba(240,191,90,.08); }
+.boot-step--done { color: var(--green); border-color: #3f7a52; opacity: .7; }
+.boot-sep { color: var(--faint); font-size: 10px; }
+.boot-next { width: 100%; }
+
 /* NAND 조립 랩 */
 .nnd-in { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .nnd-lbl { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
