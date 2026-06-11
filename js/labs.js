@@ -566,4 +566,151 @@ const LABS = {
     el.querySelectorAll('.vm-page').forEach(b => b.addEventListener('click', () => access(b.dataset.p, b)));
     paintFrames(-1);
   },
+
+  /* ── 래스터화: 꼭짓점을 끌면 덮인 픽셀이 판정된다 ── */
+  raster(el) {
+    const W = 240, H = 180, CS = 20;
+    const v = [[34, 150], [120, 24], [206, 140]];
+    el.innerHTML = `
+      <div class="lab lab--raster">
+        <svg class="raster-svg" viewBox="0 0 ${W} ${H}">
+          <g class="raster-cells"></g>
+          <path class="raster-tri" fill="none" stroke="#f0bf5a" stroke-width="1.5"/>
+          ${v.map((_, i) => `<circle class="raster-v" data-i="${i}" r="8" fill="#f0bf5a" stroke="#070a0f" stroke-width="1.5"/>`).join('')}
+        </svg>
+        <p class="lab__caption"></p>
+      </div>`;
+    const svgEl = el.querySelector('.raster-svg');
+    const cellsG = el.querySelector('.raster-cells');
+    const triEl = el.querySelector('.raster-tri');
+    const cap = el.querySelector('.lab__caption');
+    const dots = el.querySelectorAll('.raster-v');
+
+    const sign = (p, a, b) => (p[0] - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (p[1] - b[1]);
+    function inside(p) {
+      const d1 = sign(p, v[0], v[1]), d2 = sign(p, v[1], v[2]), d3 = sign(p, v[2], v[0]);
+      const neg = (d1 < 0) || (d2 < 0) || (d3 < 0), pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+      return !(neg && pos);
+    }
+    function render() {
+      let html = '', n = 0;
+      for (let r = 0; r < H / CS; r++) for (let c = 0; c < W / CS; c++) {
+        const ins = inside([c * CS + CS / 2, r * CS + CS / 2]);
+        if (ins) n++;
+        html += `<rect x="${c * CS}" y="${r * CS}" width="${CS - 1}" height="${CS - 1}" fill="${ins ? '#1f4631' : '#0c121b'}" stroke="#1b2733" stroke-width=".5"/>`;
+      }
+      cellsG.innerHTML = html;
+      triEl.setAttribute('d', `M${v[0]} L${v[1]} L${v[2]} Z`);
+      dots.forEach((d, i) => { d.setAttribute('cx', v[i][0]); d.setAttribute('cy', v[i][1]); });
+      cap.innerHTML = `덮인 픽셀 <b>${n}개</b> — 꼭짓점(●)을 끌어보세요. 셀 중심이 삼각형 안이면 점등!`;
+    }
+    let drag = -1;
+    const toSvg = (e) => {
+      const r = svgEl.getBoundingClientRect();
+      return [
+        Math.max(4, Math.min(W - 4, (e.clientX - r.left) * W / r.width)),
+        Math.max(4, Math.min(H - 4, (e.clientY - r.top) * H / r.height)),
+      ];
+    };
+    dots.forEach((d) => d.addEventListener('pointerdown', (e) => {
+      drag = +d.dataset.i; d.setPointerCapture(e.pointerId); e.preventDefault();
+    }));
+    svgEl.addEventListener('pointermove', (e) => { if (drag >= 0) { v[drag] = toSvg(e); render(); } });
+    svgEl.addEventListener('pointerup', () => { drag = -1; });
+    render();
+  },
+
+  /* ── 워프 발산: 분기 시나리오 → 실행 패스와 효율 ── */
+  divergence(el) {
+    const SC = [
+      ['모두 같은 길', 32, 0],
+      ['반반 갈림', 16, 16],
+      ['1명만 다른 길', 31, 1],
+    ];
+    el.innerHTML = `
+      <div class="lab lab--div">
+        <div class="lab__tabs">${SC.map((s, i) => `<button class="lab__tab" data-s="${i}">${s[0]}</button>`).join('')}</div>
+        <div class="div-warp">${Array.from({ length: 32 }, (_, i) => `<span class="div-th" data-t="${i}"></span>`).join('')}</div>
+        <div class="div-stats">
+          <span>패스 <b data-d="pass">—</b></span>
+          <span>효율 <b data-d="eff">—</b></span>
+        </div>
+        <p class="lab__caption">시나리오를 골라 보세요 — 워프 32스레드가 분기를 만나면?</p>
+      </div>`;
+    const tabs = el.querySelectorAll('.lab__tab');
+    const ths = el.querySelectorAll('.div-th');
+    const passEl = el.querySelector('[data-d="pass"]');
+    const effEl = el.querySelector('[data-d="eff"]');
+    const cap = el.querySelector('.lab__caption');
+    let timer = null;
+
+    function run(i) {
+      const [name, a, b] = SC[i];
+      tabs.forEach((t, j) => t.classList.toggle('lab__tab--on', j === i));
+      if (timer) { clearTimeout(timer); timer = null; }
+      const passes = b > 0 ? 2 : 1;
+      const eff = Math.round(32 / (passes * 32) * 100);
+      // 패스 1: if 쪽 활성
+      ths.forEach((t, k) => { t.className = 'div-th ' + (k < a ? 'div-th--on' : 'div-th--mask'); });
+      passEl.textContent = passes + '회';
+      effEl.textContent = eff + '%';
+      cap.innerHTML = `<b>패스 1</b>: if 쪽 ${a}명 실행, 나머지 ${b}명은 마스크(대기)`;
+      if (b > 0) {
+        timer = setTimeout(() => {
+          ths.forEach((t, k) => { t.className = 'div-th ' + (k < a ? 'div-th--mask' : 'div-th--on2'); });
+          cap.innerHTML = `<b>패스 2</b>: else 쪽 ${b}명 실행 — 단 ${b}명을 위해 한 바퀴 더! 효율 ${eff}%`;
+        }, 1000);
+      } else {
+        cap.innerHTML = `모두 같은 길 → <b>한 번에 끝</b>. 효율 100% — GPU가 좋아하는 코드입니다`;
+      }
+    }
+    tabs.forEach((t) => t.addEventListener('click', () => run(+t.dataset.s)));
+    run(0);
+  },
+
+  /* ── 텐서 레이스: 범용 ALU 64스텝 vs 텐서 코어 1명령 ── */
+  tensorrace(el) {
+    const N = 64;
+    el.innerHTML = `
+      <div class="lab lab--race">
+        <button class="race-go">▶ 4×4 행렬곱 실행 (곱-누산 64개)</button>
+        <div class="race-row">
+          <span class="race-name">범용 ALU</span>
+          <div class="race-track">${Array.from({ length: N }, () => '<span class="race-cell"></span>').join('')}</div>
+          <span class="race-count" data-r="alu">0</span>
+        </div>
+        <div class="race-row">
+          <span class="race-name">텐서 코어</span>
+          <div class="race-track race-track--one"><span class="race-cell race-cell--big"></span></div>
+          <span class="race-count" data-r="tc">0</span>
+        </div>
+        <p class="lab__caption">한쪽은 64번, 한쪽은 단 1번 — 직접 출발시켜 보세요.</p>
+      </div>`;
+    const btn = el.querySelector('.race-go');
+    const aluCells = el.querySelectorAll('.race-track:not(.race-track--one) .race-cell');
+    const tcCell = el.querySelector('.race-cell--big');
+    const aluN = el.querySelector('[data-r="alu"]');
+    const tcN = el.querySelector('[data-r="tc"]');
+    const cap = el.querySelector('.lab__caption');
+    let timer = null;
+
+    btn.addEventListener('click', () => {
+      if (timer) clearInterval(timer);
+      aluCells.forEach((c) => c.classList.remove('race-cell--on'));
+      tcCell.classList.remove('race-cell--on');
+      aluN.textContent = '0'; tcN.textContent = '0';
+      cap.innerHTML = '경주 중…';
+      let i = 0;
+      // 텐서 코어: 첫 박자에 끝
+      setTimeout(() => { tcCell.classList.add('race-cell--on'); tcN.textContent = '1 명령 ✓'; }, 60);
+      timer = setInterval(() => {
+        aluCells[i].classList.add('race-cell--on');
+        i++; aluN.textContent = i + ' 스텝';
+        if (i >= N) {
+          clearInterval(timer); timer = null;
+          cap.innerHTML = `범용 ALU <b>${N}스텝</b> vs 텐서 코어 <b>1명령</b> — 전용화의 격차입니다`;
+        }
+      }, 45);
+    });
+  },
 };

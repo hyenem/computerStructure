@@ -749,6 +749,52 @@ body::before {
 .vm-disk__light { color: var(--zero); transition: color .2s; }
 .vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
 
+/* 래스터화 랩 */
+.raster-svg {
+  display: block; width: 100%; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--bg); touch-action: none;
+}
+.raster-v { cursor: grab; }
+.raster-v:active { cursor: grabbing; }
+
+/* 워프 발산 랩 */
+.div-warp {
+  display: grid; grid-template-columns: repeat(16, 1fr); gap: 5px;
+  padding: 12px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg);
+}
+.div-th {
+  aspect-ratio: 1; border-radius: 50%; background: var(--line-2); transition: all .25s;
+}
+.div-th--on { background: var(--green); box-shadow: 0 0 6px rgba(134,230,162,.6); }
+.div-th--on2 { background: var(--gold); box-shadow: 0 0 6px rgba(240,191,90,.6); }
+.div-th--mask { background: var(--line); opacity: .45; }
+.div-stats {
+  display: flex; gap: 18px; justify-content: center; margin-top: 12px;
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+}
+.div-stats b { color: var(--gold); }
+
+/* 텐서 레이스 랩 */
+.race-go {
+  display: block; width: 100%; margin-bottom: 14px;
+  font-family: var(--mono); font-size: 12px; color: var(--gold);
+  background: rgba(240,191,90,.07); border: 1px solid var(--gold-dk); border-radius: var(--r);
+  padding: 9px 0; cursor: pointer; transition: all .15s;
+}
+.race-go:hover { background: rgba(240,191,90,.15); }
+.race-row { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.race-name { font-family: var(--mono); font-size: 9.5px; color: var(--dim); width: 58px; flex-shrink: 0; }
+.race-track {
+  flex: 1; display: grid; grid-template-columns: repeat(32, 1fr); gap: 1.5px;
+  padding: 4px; border: 1px solid var(--line-2); border-radius: var(--r); background: var(--bg);
+}
+.race-track--one { grid-template-columns: 1fr; }
+.race-cell { height: 7px; border-radius: 1.5px; background: var(--line); transition: background .1s; }
+.race-cell--big { height: 18px; }
+.race-cell--on { background: var(--green); }
+.race-cell--big.race-cell--on { background: var(--gold); box-shadow: 0 0 8px rgba(240,191,90,.5); }
+.race-count { font-family: var(--mono); font-size: 9.5px; color: var(--dim); width: 56px; text-align: right; flex-shrink: 0; }
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;
