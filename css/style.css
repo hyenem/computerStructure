@@ -499,6 +499,53 @@ body::before {
 .btn--pulse { animation: pulse-btn .4s ease; }
 @keyframes pulse-btn { 50% { border-color: var(--cyan); color: var(--cyan); } }
 
+/* ── 인트로 가이드 오버레이 ────────────────────────────── */
+.intro {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 100% at 50% 40%, rgba(8,12,18,.82), rgba(4,6,10,.96));
+  backdrop-filter: blur(4px);
+  animation: introIn .4s ease;
+}
+.intro[hidden] { display: none; }
+@keyframes introIn { from { opacity: 0; } to { opacity: 1; } }
+.intro__card {
+  width: min(460px, 90vw); padding: 38px 34px 26px; text-align: center;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line-2); border-radius: 12px;
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.intro__glyph {
+  font-family: var(--mono); font-size: 26px; color: var(--gold); letter-spacing: -4px;
+  text-shadow: 0 0 20px rgba(240,191,90,.5);
+}
+.intro__title {
+  font-family: var(--display); font-weight: 700; font-size: 28px; margin-top: 10px;
+  letter-spacing: .5px;
+}
+.intro__lead { font-size: 13.5px; line-height: 1.7; color: var(--dim); margin: 14px 0 22px; }
+.intro__lead b { color: var(--gold); }
+.intro__tips { list-style: none; text-align: left; display: grid; gap: 11px; margin-bottom: 26px; }
+.intro__tips li {
+  display: flex; align-items: flex-start; gap: 11px;
+  font-size: 13px; color: var(--dim); line-height: 1.5;
+}
+.intro__tips b { color: var(--ink); }
+.intro__tips span {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-family: var(--mono); font-size: 11px;
+  color: var(--cyan); border: 1px solid var(--cyan-dk); background: rgba(86,214,207,.07);
+}
+.intro__btn {
+  font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .5px;
+  color: #06120c; background: linear-gradient(180deg, #ffe6a0, var(--gold));
+  border: none; border-radius: 6px; padding: 12px 28px; cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(240,191,90,.6); transition: transform .15s, box-shadow .15s;
+}
+.intro__btn:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -10px rgba(240,191,90,.8); }
+.intro__hint { font-size: 10.5px; color: var(--faint); margin-top: 16px; font-family: var(--mono); }
+.wordmark { cursor: pointer; }
+
 /* ── 반응형 ────────────────────────────────────────────── */
 @media (max-width: 900px) {
   body { overflow: auto; }

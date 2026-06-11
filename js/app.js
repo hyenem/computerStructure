@@ -220,10 +220,27 @@
     stageHint.textContent = '⚙ 표현 모드 · 언어 설정은 다음 업데이트에서 열립니다';
   });
   document.addEventListener('keydown', (e) => {
+    const introEl = document.getElementById('intro');
+    if (introEl && !introEl.hidden) return; // 인트로 열려있으면 네비 무시
     if (e.key === 'Backspace' || e.key === 'Escape' || e.key === 'ArrowLeft') {
       e.preventDefault(); goUp();
     }
   });
+
+  // ── 인트로 가이드 (첫 방문 / 로고 클릭) ───────────────────
+  const intro = $('intro');
+  const introStart = $('introStart');
+  const wordmark = document.querySelector('.wordmark');
+  function showIntro() { intro.hidden = false; }
+  function hideIntro() {
+    intro.hidden = true;
+    try { localStorage.setItem('cs_seen', '1'); } catch (e) {}
+  }
+  try { if (!localStorage.getItem('cs_seen')) showIntro(); } catch (e) { showIntro(); }
+  introStart.addEventListener('click', hideIntro);
+  intro.addEventListener('click', (e) => { if (e.target === intro) hideIntro(); });
+  if (wordmark) wordmark.addEventListener('click', showIntro);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !intro.hidden) hideIntro(); });
 
   // ── 시작 ──────────────────────────────────────────────────
   render(false);
