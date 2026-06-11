@@ -664,6 +664,32 @@ body::before {
 }
 .pn-swap:hover { background: rgba(240,191,90,.15); transform: translateY(-1px); }
 
+/* 📖 교재 딥다이브 (접이식) */
+.bookx {
+  margin-top: 18px; border: 1px solid var(--gold-dk); border-radius: 6px;
+  background: linear-gradient(180deg, rgba(240,191,90,.05), transparent);
+  overflow: hidden;
+}
+.bookx summary {
+  cursor: pointer; list-style: none;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px; color: var(--gold);
+  padding: 11px 14px; user-select: none; transition: background .15s;
+}
+.bookx summary::-webkit-details-marker { display: none; }
+.bookx summary:hover { background: rgba(240,191,90,.07); }
+.bookx summary::before { content: '▸ '; }
+.bookx[open] summary::before { content: '▾ '; }
+.bookx__hint { color: var(--faint); letter-spacing: .3px; font-size: 10px; }
+.bookx__body { padding: 4px 16px 16px; border-top: 1px dashed var(--line-2); }
+.bookx__h {
+  font-family: var(--display); font-size: 13.5px; font-weight: 600; color: var(--ink);
+  margin: 16px 0 8px; padding-left: 10px; border-left: 2px solid var(--gold);
+}
+.bookx__body p {
+  font-size: 12.5px; line-height: 1.74; color: var(--dim); margin-bottom: 10px;
+}
+.bookx__body b { color: var(--ink); }
+
 /* 파이프라인 랩 */
 .pipe-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .pipe-cycle { font-family: var(--mono); font-size: 11px; color: var(--gold); }

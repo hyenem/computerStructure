@@ -153,6 +153,17 @@
         <ul>${ex.deep.map((d) => `<li>${d}</li>`).join('')}</ul>
       </div>` : '';
 
+    const book = (window.BOOK || {})[id];
+    const bookHtml = book ? `
+      <details class="bookx">
+        <summary>📖 교재 딥다이브 <span class="bookx__hint">— 전공책 수준으로 한 층 더</span></summary>
+        <div class="bookx__body">
+          ${book.map((s) => `
+            <h3 class="bookx__h">${s.h}</h3>
+            ${s.p.map((pp) => `<p>${pp}</p>`).join('')}`).join('')}
+        </div>
+      </details>` : '';
+
     const factsHtml = ex.facts ? `
       <div class="facts">
         <div class="facts__head">💡 알아두면</div>
@@ -182,6 +193,7 @@
             <div class="lab-mount" id="labMount"></div>
           </div>` : ''}
         ${deepHtml}
+        ${bookHtml}
         ${factsHtml}
         ${quizHtml}
       </div>`;
