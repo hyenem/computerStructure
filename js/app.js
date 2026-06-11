@@ -261,7 +261,8 @@
     intro.hidden = true;
     try { localStorage.setItem('cs_seen', '1'); } catch (e) {}
   }
-  try { if (!localStorage.getItem('cs_seen')) showIntro(); } catch (e) { showIntro(); }
+  const skipIntro = /[?&]skipintro/.test(location.search);
+  try { if (!skipIntro && !localStorage.getItem('cs_seen')) showIntro(); } catch (e) { if (!skipIntro) showIntro(); }
   introStart.addEventListener('click', hideIntro);
   intro.addEventListener('click', (e) => { if (e.target === intro) hideIntro(); });
   if (wordmark) wordmark.addEventListener('click', showIntro);
