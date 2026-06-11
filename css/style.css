@@ -1196,3 +1196,10 @@ body::before {
   .info__title { font-size: 22px; }
   .wordmark__sub { display: none; }
 }
+
+
+/* ⚙ 설정 + 애니메이션 끄기 */
+.set-rows { display: grid; gap: 8px; text-align: left; }
+.set-rows b { color: var(--gold); }
+.no-anim * { animation: none !important; }
+.no-anim .scene circle:has(> animateMotion) { display: none; }
