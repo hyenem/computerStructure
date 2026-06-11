@@ -749,6 +749,21 @@ body::before {
 .vm-disk__light { color: var(--zero); transition: color .2s; }
 .vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
 
+/* HDD 탐색 랩 */
+.hdd-svg {
+  display: block; width: 100%; max-width: 260px; margin: 0 auto;
+  border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg);
+}
+.hdd-sec { transition: transform .9s cubic-bezier(.4,.1,.4,1); }
+.hdd-arm { transition: transform .7s cubic-bezier(.5,0,.3,1); }
+.hdd-notrans { transition: none !important; }
+.hdd-dot--read { fill: var(--green); filter: drop-shadow(0 0 6px var(--green)); }
+.hdd-stats {
+  display: flex; gap: 16px; justify-content: center; margin-top: 12px;
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+}
+.hdd-stats b { color: var(--gold); }
+
 /* 래스터화 랩 */
 .raster-svg {
   display: block; width: 100%; border: 1px solid var(--line-2); border-radius: 6px;

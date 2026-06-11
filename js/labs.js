@@ -567,6 +567,92 @@ const LABS = {
     paintFrames(-1);
   },
 
+  /* ── HDD 탐색: 헤드 이동 + 회전 대기를 직접 겪는다 ── */
+  hddseek(el) {
+    const CX = 112, CY = 96;
+    const TRACKS = [38, 56, 74];          // 안쪽→바깥쪽 반경
+    const FULLSEEK = 8, ROTMS = 8.3;      // 풀스트로크 탐색 8ms, 1회전 8.3ms(7200rpm)
+    let headTrack = 2, busy = false;
+
+    const REQ = [
+      { name: 'A · 안쪽 멀리', track: 0, angle: 250 },
+      { name: 'B · 같은 트랙', track: -1, angle: 140 },  // -1 = 현재 트랙
+      { name: 'C · 바깥쪽', track: 2, angle: 320 },
+    ];
+
+    el.innerHTML = `
+      <div class="lab lab--hdd">
+        <div class="lab__tabs">${REQ.map((r, i) => `<button class="lab__tab" data-r="${i}">${r.name}</button>`).join('')}</div>
+        <svg class="hdd-svg" viewBox="0 0 230 192">
+          <circle cx="${CX}" cy="${CY}" r="82" fill="#11202c" stroke="#26384a" stroke-width="1.5"/>
+          ${TRACKS.map(r => `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="#2c7a78" stroke-dasharray="2 5" opacity=".55"/>`).join('')}
+          <g class="hdd-sec"><circle class="hdd-dot" cx="${CX + 56}" cy="${CY}" r="5.5" fill="#f0bf5a"/></g>
+          <circle cx="${CX}" cy="${CY}" r="15" fill="#33414f"/>
+          <circle cx="${CX}" cy="${CY}" r="4" fill="#2c7a78"/>
+          <g class="hdd-arm">
+            <path d="M226 ${CY} H${CX + 74}" stroke="#33414f" stroke-width="7" stroke-linecap="round"/>
+            <circle class="hdd-head" cx="${CX + 74}" cy="${CY}" r="6" fill="#56d6cf"/>
+          </g>
+        </svg>
+        <div class="hdd-stats">
+          <span>탐색 <b data-h="seek">—</b></span>
+          <span>회전 <b data-h="rot">—</b></span>
+          <span>합계 <b data-h="tot">—</b></span>
+        </div>
+        <p class="lab__caption">요청을 골라보세요 — 헤드가 움직이고, 원반이 돌아올 때까지 기다립니다.</p>
+      </div>`;
+
+    const secG = el.querySelector('.hdd-sec');
+    const dot = el.querySelector('.hdd-dot');
+    const armG = el.querySelector('.hdd-arm');
+    const cap = el.querySelector('.lab__caption');
+    const S = (k) => el.querySelector(`[data-h="${k}"]`);
+    const tabs = el.querySelectorAll('.lab__tab');
+
+    secG.style.transformOrigin = `${CX}px ${CY}px`;
+    armG.style.transformOrigin = `226px ${CY}px`;
+
+    function run(i) {
+      if (busy) return;
+      busy = true;
+      tabs.forEach((t, j) => t.classList.toggle('lab__tab--on', j === i));
+      const r = REQ[i];
+      const target = r.track === -1 ? headTrack : r.track;
+      const seekMs = Math.abs(target - headTrack) / (TRACKS.length - 1) * FULLSEEK;
+      const rotMs = r.angle / 360 * ROTMS;
+      const totMs = seekMs + rotMs + 0.1;
+
+      // 섹터를 시작 각도·트랙에 즉시 배치 (전환 없이)
+      secG.classList.add('hdd-notrans');
+      dot.setAttribute('cx', CX + TRACKS[target]);
+      secG.style.transform = `rotate(${r.angle}deg)`;
+      void secG.offsetWidth;
+      secG.classList.remove('hdd-notrans');
+
+      // ① 탐색: 헤드 이동
+      S('seek').textContent = seekMs.toFixed(1) + 'ms';
+      S('rot').textContent = '—'; S('tot').textContent = '—';
+      cap.innerHTML = `① <b>탐색</b> — 헤드를 트랙으로 이동 (${seekMs.toFixed(1)}ms)` + (seekMs === 0 ? ' · 이미 그 트랙!' : '');
+      armG.style.transform = `translateX(${TRACKS[target] - 74}px)`;
+      setTimeout(() => {
+        // ② 회전 대기: 섹터가 헤드(각도 0) 밑으로
+        S('rot').textContent = rotMs.toFixed(1) + 'ms';
+        cap.innerHTML = `② <b>회전 대기</b> — 섹터가 돌아올 때까지 (${rotMs.toFixed(1)}ms)`;
+        secG.style.transform = 'rotate(0deg)';
+        setTimeout(() => {
+          // ③ 읽기
+          dot.classList.add('hdd-dot--read');
+          S('tot').textContent = totMs.toFixed(1) + 'ms';
+          const ratio = Math.round(totMs / 0.1);
+          cap.innerHTML = `③ <b>읽기!</b> 합계 <b>${totMs.toFixed(1)}ms</b> — SSD라면 ≈0.1ms, <b>약 ${ratio}배</b> 차이`;
+          setTimeout(() => { dot.classList.remove('hdd-dot--read'); busy = false; }, 500);
+          headTrack = target;
+        }, 300 + rotMs * 90);
+      }, 250 + seekMs * 90);
+    }
+    tabs.forEach((t) => t.addEventListener('click', () => run(+t.dataset.r)));
+  },
+
   /* ── 래스터화: 꼭짓점을 끌면 덮인 픽셀이 판정된다 ── */
   raster(el) {
     const W = 240, H = 180, CS = 20;
