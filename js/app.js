@@ -140,10 +140,35 @@
       </div>`;
   }
 
-  // ── 렌더: 설명 패널 + 인라인 미니랩 ───────────────────────
+  // ── 렌더: 설명 패널 + 미니랩 + 전공노트/사실/퀴즈 ─────────
   function renderPanel() {
     const node = current();
+    const id = path[path.length - 1];
+    const ex = (window.EXTRAS || {})[id] || {};
     const body = (node.body || []).map((p) => `<p>${p}</p>`).join('');
+
+    const deepHtml = ex.deep ? `
+      <div class="deep">
+        <div class="deep__head">📘 전공 노트</div>
+        <ul>${ex.deep.map((d) => `<li>${d}</li>`).join('')}</ul>
+      </div>` : '';
+
+    const factsHtml = ex.facts ? `
+      <div class="facts">
+        <div class="facts__head">💡 알아두면</div>
+        <ul>${ex.facts.map((f) => `<li>${f}</li>`).join('')}</ul>
+      </div>` : '';
+
+    const quizHtml = ex.quiz ? `
+      <div class="quiz" id="quizBox">
+        <div class="quiz__head">✅ 확인 퀴즈</div>
+        <p class="quiz__q">${ex.quiz.q}</p>
+        <div class="quiz__opts">
+          ${ex.quiz.opts.map((o, i) => `<button class="quiz__opt" data-q="${i}">${o}</button>`).join('')}
+        </div>
+        <p class="quiz__why" hidden></p>
+      </div>` : '';
+
     panelScroll.innerHTML = `
       <div class="info">
         <div class="info__depth">L${node.depth} / L8</div>
@@ -156,12 +181,36 @@
             <div class="lab-wrap__head"><span class="lab-wrap__icon">🧪</span> 직접 해보기 · MINI&nbsp;LAB</div>
             <div class="lab-mount" id="labMount"></div>
           </div>` : ''}
+        ${deepHtml}
+        ${factsHtml}
+        ${quizHtml}
       </div>`;
 
     if (node.lab && LABS[node.lab]) {
       LABS[node.lab]($('labMount'));
     }
+    if (ex.quiz) bindQuiz(ex.quiz);
     panelScroll.scrollTop = 0;
+  }
+
+  // 퀴즈: 선택 → 채점 + 해설
+  function bindQuiz(quiz) {
+    const box = $('quizBox');
+    const opts = box.querySelectorAll('.quiz__opt');
+    const why = box.querySelector('.quiz__why');
+    let answered = false;
+    opts.forEach((btn) => btn.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      const pick = +btn.dataset.q;
+      opts.forEach((b, i) => {
+        b.disabled = true;
+        if (i === quiz.a) b.classList.add('quiz__opt--right');
+        else if (i === pick) b.classList.add('quiz__opt--wrong');
+      });
+      why.innerHTML = (pick === quiz.a ? '<b>정답!</b> ' : '<b>아쉽!</b> ') + quiz.why;
+      why.hidden = false;
+    }));
   }
 
   // ── 탐험 진행률 (방문 노드 기록) ──────────────────────────

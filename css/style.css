@@ -583,6 +583,87 @@ body::before {
 .cache-score { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: center; }
 .cache-score b { color: var(--ink); }
 
+/* ── 전공 노트 / 알아두면 / 퀴즈 ───────────────────────── */
+.deep, .facts, .quiz {
+  margin-top: 18px; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--line-2);
+}
+.deep__head, .facts__head, .quiz__head {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+  padding: 8px 13px; border-bottom: 1px solid var(--line-2);
+}
+.deep { background: linear-gradient(180deg, rgba(240,191,90,.04), transparent); }
+.deep__head { color: var(--gold); background: rgba(240,191,90,.06); }
+.deep ul, .facts ul { list-style: none; padding: 12px 14px; display: grid; gap: 10px; }
+.deep li, .facts li {
+  font-size: 12.5px; line-height: 1.68; color: var(--dim);
+  padding-left: 14px; position: relative;
+}
+.deep li::before { content: '▸'; position: absolute; left: 0; color: var(--gold-dk); }
+.deep li b { color: var(--ink); }
+.facts { background: linear-gradient(180deg, rgba(86,214,207,.03), transparent); }
+.facts__head { color: var(--cyan); background: rgba(86,214,207,.05); }
+.facts li::before { content: '·'; position: absolute; left: 2px; color: var(--cyan-dk); }
+.facts li b { color: var(--ink); }
+.quiz { background: var(--panel-2); margin-bottom: 8px; }
+.quiz__head { color: var(--green); background: rgba(134,230,162,.05); }
+.quiz__q { font-size: 13px; color: var(--ink); line-height: 1.6; padding: 12px 14px 4px; }
+.quiz__opts { display: grid; gap: 7px; padding: 8px 14px 12px; }
+.quiz__opt {
+  text-align: left; font-family: var(--sans); font-size: 12.5px; color: var(--dim);
+  background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 9px 12px; cursor: pointer; transition: all .15s;
+}
+.quiz__opt:hover:not(:disabled) { border-color: var(--cyan-dk); color: var(--ink); }
+.quiz__opt:disabled { cursor: default; opacity: .75; }
+.quiz__opt--right {
+  border-color: var(--green) !important; color: var(--green) !important;
+  background: rgba(134,230,162,.08); opacity: 1 !important;
+}
+.quiz__opt--wrong { border-color: #c0654a !important; color: #e0916f !important; }
+.quiz__why {
+  font-size: 12px; line-height: 1.6; color: var(--dim);
+  padding: 0 14px 13px; border-top: 1px dashed var(--line); padding-top: 10px; margin: 0 14px 13px; padding-left: 0; padding-right: 0;
+}
+.quiz__why b { color: var(--green); }
+
+/* 2진수 변환기 랩 */
+.bin-row { display: flex; gap: 5px; justify-content: space-between; }
+.bin-col { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
+.bin-col .bit { width: 100%; max-width: 38px; height: 36px; font-size: 15px; }
+.bin-weight { font-family: var(--mono); font-size: 9px; color: var(--faint); }
+.bin-result {
+  margin-top: 13px; text-align: center; font-family: var(--mono);
+  font-size: 14px; color: var(--dim);
+}
+.bin-result b { color: var(--gold); font-size: 19px; }
+
+/* PN 바이어스 랩 */
+.pn-diagram { display: flex; align-items: center; gap: 10px; }
+.pn-pole { font-family: var(--mono); font-size: 18px; color: var(--gold); width: 22px; text-align: center; }
+.pn-body { flex: 1; display: flex; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line-2); }
+.pn-block {
+  width: 38%; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 15px;
+}
+.pn-block--p { background: #3a2230; color: var(--gold); }
+.pn-block--n { background: #1d3344; color: var(--cyan); }
+.pn-junction { flex: 1; position: relative; background: #11202c; transition: background .3s; }
+.pn-junction[data-state="off"] { background: #0a1118; }
+.pn-flow {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(134,230,162,.65), transparent);
+  background-size: 30px 100%; opacity: 0; transition: opacity .3s;
+}
+.pn-junction[data-state="on"] .pn-flow { opacity: 1; animation: flow .6s linear infinite; }
+.pn-swap {
+  display: block; margin: 14px auto 0; font-family: var(--mono); font-size: 12px;
+  color: var(--gold); background: rgba(240,191,90,.07);
+  border: 1px solid var(--gold-dk); border-radius: var(--r);
+  padding: 8px 16px; cursor: pointer; transition: all .15s;
+}
+.pn-swap:hover { background: rgba(240,191,90,.15); transform: translateY(-1px); }
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;

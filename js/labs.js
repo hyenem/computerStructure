@@ -382,4 +382,73 @@ const LABS = {
       b.addEventListener('click', () => request(b.dataset.a, b)));
     renderSlots(null, null);
   },
+
+  /* ── 2진수 변환기: 8비트 토글 → 10진수 ── */
+  binary(el) {
+    const N = 8;
+    let bits = [0, 0, 1, 0, 1, 0, 1, 0]; // 42
+    el.innerHTML = `
+      <div class="lab lab--bin">
+        <div class="bin-row">
+          ${bits.map((b, i) => `
+            <div class="bin-col">
+              <span class="bin-weight">${2 ** (N - 1 - i)}</span>
+              <button class="bit" data-i="${i}">${b}</button>
+            </div>`).join('')}
+        </div>
+        <div class="bin-result">= <b class="bin-dec">42</b></div>
+        <p class="lab__caption">비트를 눌러 켜고 꺼보세요. 켜진 자리의 가중치를 더하면 10진수!</p>
+      </div>`;
+    const dec = el.querySelector('.bin-dec');
+    const cap = el.querySelector('.lab__caption');
+    function render() {
+      let v = 0; const on = [];
+      bits.forEach((b, i) => {
+        const w = 2 ** (N - 1 - i);
+        if (b) { v += w; on.push(w); }
+        const btn = el.querySelector(`[data-i="${i}"]`);
+        btn.textContent = b; btn.classList.toggle('bit--on', !!b);
+      });
+      dec.textContent = v;
+      cap.innerHTML = on.length
+        ? `${on.join(' + ')} = <b>${v}</b> — 메모리 한 칸에 담긴 숫자도 이렇게 비트로.`
+        : '모든 비트가 0 → 값도 0. 비트를 켜보세요!';
+    }
+    el.querySelectorAll('.bit').forEach(btn =>
+      btn.addEventListener('click', () => { bits[+btn.dataset.i] ^= 1; render(); }));
+    render();
+  },
+
+  /* ── PN 접합 바이어스: 순방향/역방향 → 전류 통과/차단 ── */
+  pn(el) {
+    let forward = true;
+    el.innerHTML = `
+      <div class="lab lab--pn">
+        <div class="pn-diagram">
+          <span class="pn-pole pn-pole--l">＋</span>
+          <div class="pn-body">
+            <div class="pn-block pn-block--p">P</div>
+            <div class="pn-junction"><span class="pn-flow"></span></div>
+            <div class="pn-block pn-block--n">N</div>
+          </div>
+          <span class="pn-pole pn-pole--r">−</span>
+        </div>
+        <button class="pn-swap">⇄ 전지 방향 뒤집기</button>
+        <p class="lab__caption"></p>
+      </div>`;
+    const lPole = el.querySelector('.pn-pole--l');
+    const rPole = el.querySelector('.pn-pole--r');
+    const junction = el.querySelector('.pn-junction');
+    const cap = el.querySelector('.lab__caption');
+    function render() {
+      lPole.textContent = forward ? '＋' : '−';
+      rPole.textContent = forward ? '−' : '＋';
+      junction.dataset.state = forward ? 'on' : 'off';
+      cap.innerHTML = forward
+        ? 'P쪽에 ＋ → <b class="one">순방향: 전류 통과!</b> 정공과 전자가 접합부로 모여 길이 열립니다.'
+        : 'P쪽에 − → <b class="zero">역방향: 차단.</b> 캐리어가 양끝으로 끌려가 공핍 영역이 넓어집니다.';
+    }
+    el.querySelector('.pn-swap').addEventListener('click', () => { forward = !forward; render(); });
+    render();
+  },
 };
