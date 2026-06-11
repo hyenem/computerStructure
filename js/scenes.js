@@ -418,6 +418,19 @@
       ${[0,1,2,3].map(i => arrowR(426, 108 + i*16, 506, C.grn) + flow(`M426 ${108+i*16} H500`, C.grn, 1, 1.5, 2)).join('')}
       ${flow('M206 129 H256', C.cyan, 2, 1.4, 2.5)}
       <text x="430" y="210" class="s-label" fill="${C.grn}">→ 제어신호: ALU · 레지스터 · 메모리에 "지금 무엇을 하라"</text>
+
+      <!-- FSM: 명령 사이클의 상태 기계 (순환 구조) -->
+      <text x="300" y="252" text-anchor="middle" class="s-label" fill="${C.fnt}">유한 상태 기계(FSM) — 매 명령마다 이 고리를 돈다</text>
+      ${[['FETCH', 150, C.cyan], ['DECODE', 300, C.gold], ['EXEC', 450, C.grn]].map(([t, x, col]) => `
+        <circle cx="${x}" cy="320" r="34" fill="${C.pan2}" stroke="${col}" stroke-width="1.5"/>
+        <text x="${x}" y="325" text-anchor="middle" font-family="monospace" font-size="10" fill="${col}">${t}</text>`).join('')}
+      <path d="M184 320 H416" stroke="${C.ln2}" stroke-width="1.5"/>
+      <path d="M210 314 L184 320 L210 326 M330 314 L304 320 M444 314 L418 320" fill="none" stroke="${C.ln2}"/>
+      <path d="M450 354 Q300 412 150 354" fill="none" stroke="${C.ln2}" stroke-width="1.5" stroke-dasharray="4 4"/>
+      ${flow('M184 320 H266', C.cyan, 1, 1.4, 2.5)}
+      ${flow('M334 320 H416', C.gold, 1, 1.4, 2.5)}
+      ${flow('M450 354 Q300 412 150 354', C.grn, 2, 2.6, 2.5)}
+      <text x="300" y="404" text-anchor="middle" class="s-label" fill="${C.fnt}">↺ 다음 명령으로</text>
     `),
 
     /* ─── 레지스터: 종류별 파일(각 행이 진입) ─── */
