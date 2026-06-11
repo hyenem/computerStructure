@@ -33,6 +33,31 @@
     return Math.max(0, Math.min(1, t)) * 100;
   }
 
+  // 게이지 눈금(실제 크기 레퍼런스) — 물리적 줌인 무드
+  function buildGaugeTicks() {
+    const track = $('gaugeTrack');
+    const marker = $('gaugeMarker');
+    const TICKS = [
+      ['10cm', 0.1, 1], ['1cm', 0.01, 1], ['1mm', 1e-3, 1],
+      ['100µm', 1e-4, 0], ['1µm', 1e-6, 1], ['10nm', 1e-8, 0],
+      ['1nm', 1e-9, 1], ['1Å', 1e-10, 1],
+    ];
+    TICKS.forEach(([label, m, major]) => {
+      const top = gaugePercent(m);
+      const tick = document.createElement('div');
+      tick.className = 'gauge__tick' + (major ? ' gauge__tick--major' : '');
+      tick.style.top = top + '%';
+      track.insertBefore(tick, marker);
+      if (major) {
+        const lab = document.createElement('div');
+        lab.className = 'gauge__ticklabel';
+        lab.style.top = top + '%';
+        lab.textContent = label;
+        track.insertBefore(lab, marker);
+      }
+    });
+  }
+
   // ── 렌더: 빵부스러기 ──────────────────────────────────────
   function renderBreadcrumb() {
     breadcrumbEl.innerHTML = '';
@@ -243,5 +268,6 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !intro.hidden) hideIntro(); });
 
   // ── 시작 ──────────────────────────────────────────────────
+  buildGaugeTicks();
   render(false);
 })();
