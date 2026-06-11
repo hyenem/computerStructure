@@ -133,6 +133,13 @@
          ${spin(`<circle cx="132" cy="341" r="24" fill="none" stroke="${C.goldD}" stroke-width="1.5"/>
            <path d="M132 317 V365 M108 341 H156 M115 324 L149 358 M149 324 L115 358" stroke="${C.goldD}" stroke-width="1" opacity=".6"/>`, 'spin-slow')}`,
         { accent: C.goldD })}
+
+      <!-- 데이터의 여정: 저장장치 → CPU → GPU(화면) -->
+      <path d="M226 107 H264 V146 H300" fill="none" stroke="${C.gold}" stroke-width="1" stroke-dasharray="3 4" opacity=".4"/>
+      ${flow('M226 107 H264 V146 H298', C.gold, 2, 2.6, 2.5)}
+      <path d="M384 146 H398 V341 H424" fill="none" stroke="${C.cyan}" stroke-width="1" stroke-dasharray="3 4" opacity=".4"/>
+      ${flow('M386 146 H398 V341 H422', C.cyan, 2, 2.8, 2.5)}
+      <text x="300" y="412" text-anchor="middle" class="s-label" fill="${C.fnt}">·· 데이터의 여정 — 저장장치에서 깨어나 CPU를 거쳐 GPU(화면)로 ··</text>
     `),
 
     /* ─── L1 메인보드: PCB 탑뷰 ─── */
@@ -272,6 +279,27 @@
       ${flow('M60 240 H140 M90 240 V170 H170', C.cyan, 2, 1.9, 2.5)}
       ${flow('M246 150 H470', C.grn, 2, 1.8, 2.5)}
       ${flow('M246 230 H470', C.grn, 2, 2.0, 2.5)}
+
+      <!-- 확장: 전가산기 = 반가산기 ×2 + OR -->
+      <text x="300" y="298" text-anchor="middle" class="s-label" fill="${C.fnt}">확장 — 아랫자리 올림(Cin)까지 받는 전가산기:</text>
+      <text x="40" y="330" font-family="monospace" font-size="9" fill="${C.dim}">A,B</text>
+      <path d="M66 326 H88" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <rect x="88" y="312" width="88" height="40" rx="4" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <text x="132" y="336" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.cyan}">반가산기 1</text>
+      <text x="252" y="296" font-family="monospace" font-size="9" fill="${C.dim}">Cin ↓</text>
+      <path d="M268 300 V312" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <path d="M176 324 H224" stroke="${C.grn}" stroke-width="1.5"/>
+      <rect x="224" y="312" width="88" height="40" rx="4" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <text x="268" y="336" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.cyan}">반가산기 2</text>
+      <path d="M312 324 H560" stroke="${C.grn}" stroke-width="1.5"/>
+      <text x="536" y="318" font-family="monospace" font-size="9" fill="${C.grn}">합</text>
+      <path d="M132 352 V376 H368 M268 352 V376" stroke="${C.goldD}" stroke-width="1.5" fill="none"/>
+      <rect x="368" y="358" width="64" height="36" rx="4" fill="${C.pan2}" stroke="${C.goldD}"/>
+      <text x="400" y="380" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.gold}">OR</text>
+      <path d="M432 376 H560" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="510" y="370" font-family="monospace" font-size="9" fill="${C.gold}">올림 Cout</text>
+      ${flow('M178 324 H222', C.grn, 1, 1.5, 2)}
+      ${flow('M434 376 H558', C.gold, 1, 1.7, 2)}
     `),
 
     /* ─── L5 논리게이트: AND 기호 + 트랜지스터로 분해 ─── */
@@ -283,12 +311,34 @@
       <path d="M190 100 H250 Q330 100 330 180 Q330 260 250 260 H190 Z"
             fill="${C.pan2}" stroke="${C.gold}" stroke-width="2"/>
       <text x="250" y="186" text-anchor="middle" font-family="monospace" font-size="18" fill="${C.gold}">AND</text>
-      <path d="M330 180 H420" stroke="${C.grn}" stroke-width="2"/>
-      <text x="430" y="185" class="s-label" fill="${C.grn}">출력</text>
+      <path d="M330 180 H400" stroke="${C.grn}" stroke-width="2"/>
+      <text x="404" y="185" class="s-label" fill="${C.grn}">출력</text>
       ${flow('M70 130 H190', C.cyan, 2, 1.7, 2.5)}
       ${flow('M70 230 H190', C.cyan, 2, 1.9, 2.5)}
-      ${flow('M330 180 H420', C.grn, 2, 1.7, 2.5)}
+      ${flow('M330 180 H398', C.grn, 2, 1.7, 2.5)}
       <text x="250" y="300" text-anchor="middle" class="s-label" fill="${C.dim}">이 게이트는 무엇으로 만들까? ↓</text>
+
+      <!-- 내부 회로: CMOS — PMOS 병렬(위) + NMOS 직렬(아래) = NAND -->
+      <rect x="438" y="56" width="148" height="240" rx="6" fill="#0f1620" stroke="${C.ln2}"/>
+      <text x="512" y="74" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.fnt}">내부 회로 · CMOS</text>
+      <text x="512" y="92" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.gold}">VDD (전원)</text>
+      <path d="M458 98 H566" stroke="${C.gold}" stroke-width="1.5"/>
+      <rect x="464" y="108" width="44" height="26" rx="3" fill="${C.pan2}" stroke="${C.cyan}"/>
+      <text x="486" y="125" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyan}">P (A)</text>
+      <rect x="516" y="108" width="44" height="26" rx="3" fill="${C.pan2}" stroke="${C.cyan}"/>
+      <text x="538" y="125" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyan}">P (B)</text>
+      <path d="M486 98 V108 M538 98 V108 M486 134 V150 M538 134 V150" stroke="${C.ln2}"/>
+      <path d="M458 150 H566" stroke="${C.grn}" stroke-width="1.5"/>
+      ${flow('M460 150 H564', C.grn, 1, 1.8, 2)}
+      <rect x="490" y="160" width="44" height="26" rx="3" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <text x="512" y="177" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyanD}">N (A)</text>
+      <rect x="490" y="196" width="44" height="26" rx="3" fill="${C.pan2}" stroke="${C.cyanD}"/>
+      <text x="512" y="213" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.cyanD}">N (B)</text>
+      <path d="M512 150 V160 M512 186 V196 M512 222 V234" stroke="${C.ln2}"/>
+      <path d="M458 234 H566" stroke="${C.fnt}" stroke-width="1.5"/>
+      <text x="512" y="250" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">GND (접지)</text>
+      <text x="512" y="268" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">P병렬 + N직렬 = NAND (4T)</text>
+      <text x="512" y="282" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">+ NOT(2T) → AND = 6개</text>
 
       ${hot('transistor', '트랜지스터',
         `<rect class="hot__shape" x="180" y="320" width="240" height="78" rx="6" fill="#16222e" stroke="${C.cyanD}" stroke-width="1.5"/>
@@ -687,8 +737,22 @@
       <text x="300" y="210" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">TR</text>
       <path d="M300 230 V270" stroke="${C.ink}" stroke-width="2"/>
       <g class="throb"><path d="M270 272 H330 M278 282 H322" stroke="${C.grn}" stroke-width="3"/></g>
-      <text x="350" y="280" class="s-label" fill="${C.grn}">축전기 (전하=1, 빔=0)</text>
+      <text x="258" y="280" text-anchor="end" class="s-label" fill="${C.grn}">축전기 (전하=1, 빔=0) →</text>
       <path d="M300 282 V300" stroke="${C.gold}" stroke-width="2"/>
+
+      <!-- 비교: SRAM 6T 셀 (캐시용) -->
+      <rect x="386" y="146" width="190" height="186" rx="6" fill="#0f1620" stroke="${C.ln2}"/>
+      <text x="481" y="166" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.fnt}">비교 · SRAM 6T 셀 (캐시)</text>
+      <path d="M428 184 L428 216 L462 200 Z" fill="${C.pan2}" stroke="${C.cyan}" stroke-width="1.5"/>
+      <circle cx="467" cy="200" r="4" fill="none" stroke="${C.cyan}"/>
+      <path d="M534 264 L534 232 L500 248 Z" fill="${C.pan2}" stroke="${C.cyan}" stroke-width="1.5"/>
+      <circle cx="495" cy="248" r="4" fill="none" stroke="${C.cyan}"/>
+      <path d="M471 200 H548 V248 H538" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <path d="M491 248 H414 V200 H428" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+      ${flow('M471 200 H548 V248 H538 M491 248 H414 V200 H426', C.grn, 2, 2.4, 2)}
+      <text x="481" y="292" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">인버터 2개가 서로를 붙듦</text>
+      <text x="481" y="306" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">리프레시 불필요 · 빠름</text>
+      <text x="481" y="320" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">대신 트랜지스터 6개 = 비쌈</text>
     `),
 
     /* ─── GPU 연산 코어: SIMD 방송 ─── */
