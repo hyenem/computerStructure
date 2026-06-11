@@ -749,6 +749,44 @@ body::before {
 .vm-disk__light { color: var(--zero); transition: color .2s; }
 .vm-disk--busy { color: #e0916f; animation: throb .55s ease infinite; }
 
+/* 밴드갭 랩 */
+.band-view {
+  border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg);
+  padding: 14px; display: flex; flex-direction: column;
+}
+.band {
+  position: relative; height: 44px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.band span { font-family: var(--mono); font-size: 8.5px; color: var(--dim); }
+.band--cond { background: repeating-linear-gradient(45deg, #16303a 0 8px, #1a3744 8px 16px); border: 1px solid var(--cyan-dk); }
+.band--val { background: repeating-linear-gradient(45deg, #1a2c20 0 8px, #1f3526 8px 16px); border: 1px solid #3f7a52; }
+.band--val .band-e { position: absolute; bottom: 4px; color: var(--green); font-size: 8px; }
+.band--val .band-e:nth-child(2) { left: 18%; } .band--val .band-e:nth-child(3) { left: 42%; }
+.band--val .band-e:nth-child(4) { left: 64%; } .band--val .band-e:nth-child(5) { left: 84%; }
+.band-gap {
+  position: relative; height: 20px; transition: height .25s ease;
+  display: flex; align-items: center; justify-content: center;
+}
+.band-gap__label { font-family: var(--mono); font-size: 8px; color: var(--faint); }
+.band-jump {
+  position: absolute; right: 16%; font-family: var(--mono); font-size: 9px; color: var(--green);
+  opacity: 0;
+}
+.band-jump[data-j="hop"] { opacity: 1; animation: bandhop 1.6s ease-in-out infinite; }
+.band-jump[data-j="free"] { opacity: 1; animation: bandflow 1s linear infinite; }
+@keyframes bandhop { 0%,35% { transform: translateY(8px); opacity: .4; } 60%,80% { transform: translateY(-8px); opacity: 1; } 100% { transform: translateY(8px); opacity: .4; } }
+@keyframes bandflow { from { transform: translateX(0); } to { transform: translateX(-14px); } }
+.band-verdict {
+  margin-top: 12px; padding: 9px 12px; border-radius: var(--r);
+  font-size: 12px; line-height: 1.5; color: var(--dim);
+  border: 1px solid var(--line-2); text-align: center;
+}
+.band-verdict[data-v="cond"]  { border-color: var(--cyan-dk); }
+.band-verdict[data-v="semi"]  { border-color: var(--gold-dk); background: rgba(240,191,90,.06); }
+.band-verdict[data-v="insul"] { border-color: var(--line-2); opacity: .85; }
+.band-verdict b { color: var(--ink); }
+
 /* HDD 탐색 랩 */
 .hdd-svg {
   display: block; width: 100%; max-width: 260px; margin: 0 auto;

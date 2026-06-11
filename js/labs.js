@@ -567,6 +567,59 @@ const LABS = {
     paintFrames(-1);
   },
 
+  /* ── 밴드갭: 에너지 틈을 조절해 도체/반도체/부도체 체험 ── */
+  bandgap(el) {
+    el.innerHTML = `
+      <div class="lab lab--band">
+        <div class="band-view">
+          <div class="band band--cond"><span>전도대 (자유로운 전자의 층)</span></div>
+          <div class="band-gap"><span class="band-gap__label"></span><span class="band-jump">e⁻</span></div>
+          <div class="band band--val"><span>가전자대 (결합에 묶인 전자)</span>
+            <span class="band-e">●</span><span class="band-e">●</span><span class="band-e">●</span><span class="band-e">●</span>
+          </div>
+        </div>
+        <label class="tr-control">
+          <span>밴드갭</span>
+          <input type="range" min="0" max="100" value="22" class="tr-slider band-slider"/>
+          <span class="tr-volt band-ev">1.1eV</span>
+        </label>
+        <div class="band-verdict"></div>
+        <p class="lab__caption"></p>
+      </div>`;
+    const gapEl = el.querySelector('.band-gap');
+    const gapLabel = el.querySelector('.band-gap__label');
+    const jump = el.querySelector('.band-jump');
+    const slider = el.querySelector('.band-slider');
+    const ev = el.querySelector('.band-ev');
+    const verdict = el.querySelector('.band-verdict');
+    const cap = el.querySelector('.lab__caption');
+
+    function render() {
+      const v = +slider.value;
+      const gap = v / 100 * 6;                  // 0 ~ 6 eV
+      ev.textContent = gap.toFixed(1) + 'eV';
+      gapEl.style.height = Math.max(4, v * 0.9) + 'px';
+      gapLabel.textContent = gap < 0.2 ? '' : '에너지 틈';
+      let cls, msg, jmp;
+      if (gap < 0.2) {
+        cls = 'cond'; jmp = 'free';
+        msg = '<b>도체</b> (구리·금) — 띠가 겹쳐 전자가 항상 자유롭게 흐른다';
+      } else if (gap < 3) {
+        cls = 'semi'; jmp = 'hop';
+        msg = `<b>반도체</b> (실리콘 1.1eV) — 적당한 틈: 열·전압·도핑으로 <b>건널 수 있다</b> = 조건부 스위치!`;
+      } else {
+        cls = 'insul'; jmp = 'none';
+        msg = '<b>부도체</b> (유리·고무) — 틈이 너무 넓어 전자가 건너지 못한다';
+      }
+      verdict.dataset.v = cls;
+      verdict.innerHTML = msg;
+      jump.dataset.j = jmp;
+      cap.innerHTML = '슬라이더로 에너지 틈을 조절해 보세요 — 물질의 운명이 갈립니다.';
+    }
+    slider.addEventListener('input', render);
+    render();
+  },
+
   /* ── HDD 탐색: 헤드 이동 + 회전 대기를 직접 겪는다 ── */
   hddseek(el) {
     const CX = 112, CY = 96;
