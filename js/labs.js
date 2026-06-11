@@ -262,4 +262,39 @@ const LABS = {
     nextBtn.addEventListener('click', step);
     paint(null, '버튼을 눌러 한 단계씩 — CPU가 명령을 처리하는 과정', null);
   },
+
+  /* ── 플립플롭: 클럭이 올 때만 값을 저장 ── */
+  flipflop(el) {
+    let d = 1, q = 0;
+    el.innerHTML = `
+      <div class="lab lab--ff">
+        <div class="ff-row">
+          <div class="ff-cell"><span>입력 D</span><button class="bit" data-d>1</button></div>
+          <button class="ff-clk">⎍ CLK</button>
+          <div class="ff-cell"><span>저장 Q</span><span class="bit bit--out" data-q>0</span></div>
+        </div>
+        <p class="lab__caption"></p>
+      </div>`;
+    const bitD = el.querySelector('[data-d]');
+    const bitQ = el.querySelector('[data-q]');
+    const clk = el.querySelector('.ff-clk');
+    const cap = el.querySelector('.lab__caption');
+
+    function render(latched) {
+      bitD.textContent = d; bitD.classList.toggle('bit--on', !!d);
+      bitQ.textContent = q; bitQ.classList.toggle('bit--on', !!q);
+      cap.innerHTML = latched
+        ? `⎍ <b>클럭!</b> 이 순간 Q ← D 가 저장됨 → Q=${q}`
+        : (d === q
+            ? 'D를 바꿔 보세요. 클럭(CLK)을 눌러야 Q에 저장됩니다.'
+            : `지금 D=${d}, Q=${q} — <b>다르죠?</b> 클럭을 눌러야 Q가 따라옵니다.`);
+    }
+    bitD.addEventListener('click', () => { d ^= 1; render(false); });
+    clk.addEventListener('click', () => {
+      q = d;
+      bitQ.classList.remove('ff-flash'); void bitQ.offsetWidth; bitQ.classList.add('ff-flash');
+      render(true);
+    });
+    render(false);
+  },
 };

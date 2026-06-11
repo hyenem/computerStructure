@@ -522,6 +522,23 @@ body::before {
 .fdx-reg.hot { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(86,214,207,.3); }
 .fdx-reg.hot b { color: var(--cyan); }
 
+/* 플립플롭 랩 */
+.ff-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ff-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ff-cell span { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+.ff-clk {
+  font-family: var(--mono); font-size: 13px; color: var(--gold);
+  background: rgba(240,191,90,.07); border: 1px solid var(--gold-dk); border-radius: var(--r);
+  padding: 10px 14px; cursor: pointer; transition: all .15s; align-self: flex-end;
+}
+.ff-clk:hover { background: rgba(240,191,90,.15); transform: translateY(-1px); }
+.ff-clk:active { transform: translateY(1px); }
+.ff-flash { animation: ffflash .45s ease; }
+@keyframes ffflash {
+  0% { box-shadow: 0 0 0 0 rgba(134,230,162,.7); }
+  100% { box-shadow: 0 0 0 12px rgba(134,230,162,0); }
+}
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;
