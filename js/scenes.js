@@ -233,13 +233,20 @@
       <text x="300" y="80" text-anchor="middle" class="s-label" fill="${C.dim}">입력 A</text>
       <text x="300" y="118" text-anchor="middle" class="s-label" fill="${C.dim}">입력 B</text>
       <path d="M210 70 V90 M390 70 V90" stroke="${C.cyanD}" stroke-width="2"/>
-      <text x="500" y="200" class="s-label" fill="${C.goldD}">연산 선택</text>
-      <path d="M480 200 L410 210" stroke="${C.goldD}" stroke-width="1.5"/>
       <text x="300" y="360" text-anchor="middle" class="s-label" fill="${C.grn}">결과 출력 ↓</text>
       <path d="M300 330 V356" stroke="${C.grn}" stroke-width="2"/>
       ${flow('M210 72 V128', C.cyan, 2, 1.6, 2.5)}
       ${flow('M390 72 V128', C.cyan, 2, 1.6, 2.5)}
-      ${flow('M300 250 V356', C.grn, 2, 1.8, 2.5)}
+
+      <!-- MUX: 제어신호가 두 연산 결과 중 하나를 고른다 -->
+      <path d="M246 280 V290 H282 M354 280 V290 H318" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <path d="M278 290 L322 290 L312 322 L288 322 Z" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="300" y="310" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.gold}">MUX</text>
+      <path d="M300 322 V330" stroke="${C.grn}" stroke-width="2"/>
+      <text x="498" y="300" class="s-label" fill="${C.goldD}">연산 선택</text>
+      <path d="M494 306 H324" stroke="${C.goldD}" stroke-width="1.5" stroke-dasharray="4 3"/>
+      ${flow('M492 306 H326', C.gold, 1, 1.5, 2)}
+      ${flow('M300 324 V356', C.grn, 2, 1.4, 2.5)}
 
       ${hot('adder', '가산기',
         `<rect class="hot__shape" x="200" y="150" width="92" height="130" rx="4" fill="#1a2433" stroke="${C.cyanD}"/>

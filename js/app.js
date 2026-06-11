@@ -140,6 +140,45 @@
       </div>`;
   }
 
+  // ── 용어 교차 링크: 설명 속 용어 → 해당 노드로 점프 ───────
+  // 긴 용어 먼저 (부분 일치 방지). 패널당 용어별 첫 등장만 링크.
+  const XREF = [
+    ['프로그램 카운터', 'reg_pc'], ['페이지 테이블', 'virtualmem'], ['가상 메모리', 'virtualmem'],
+    ['주소 버스', 'bus_addr'], ['데이터 버스', 'bus_data'], ['제어 버스', 'bus_ctrl'],
+    ['논리게이트', 'gate'], ['트랜지스터', 'transistor'], ['플립플롭', 'register'],
+    ['메모리 셀', 'memcell'], ['제어장치', 'control'], ['파이프라인', 'pipeline'],
+    ['PN접합', 'semiconductor'], ['PN 접합', 'semiconductor'], ['반도체', 'semiconductor'],
+    ['레지스터', 'register'], ['메인보드', 'motherboard'], ['가산기', 'adder'],
+    ['MMU', 'virtualmem'], ['TLB', 'virtualmem'], ['MAR', 'reg_mar'], ['MDR', 'reg_mdr'],
+    ['ACC', 'reg_acc'], ['ALU', 'alu'], ['VRAM', 'vram'], ['캐시', 'cache'],
+    ['CPU', 'cpu'], ['GPU', 'gpu'], ['RAM', 'ram'], ['SSD', 'ssd'], ['HDD', 'hdd'],
+  ];
+  // 부모 맵으로 노드까지의 경로 계산
+  const PARENT = {};
+  Object.keys(NODES).forEach((pid) => (NODES[pid].kids || []).forEach((k) => { PARENT[k] = pid; }));
+  function findPath(id) {
+    const p = [id];
+    while (p[0] !== ROOT && PARENT[p[0]]) p.unshift(PARENT[p[0]]);
+    return p[0] === ROOT ? p : null;
+  }
+  function linkify(html, currentId) {
+    const used = new Set();
+    // 태그는 건드리지 않고 텍스트 조각만 치환
+    return html.split(/(<[^>]*>)/).map((seg) => {
+      if (seg.startsWith('<')) return seg;
+      for (const [term, target] of XREF) {
+        if (used.has(term) || target === currentId) continue;
+        const idx = seg.indexOf(term);
+        if (idx === -1) continue;
+        used.add(term);
+        seg = seg.slice(0, idx)
+          + `<a class="xref" data-node="${target}" title="${NODES[target].title}(으)로 이동">${term}</a>`
+          + seg.slice(idx + term.length);
+      }
+      return seg;
+    }).join('');
+  }
+
   // ── 렌더: 설명 패널 + 미니랩 + 전공노트/사실/퀴즈 ─────────
   function renderPanel() {
     const node = current();
@@ -180,12 +219,8 @@
         <p class="quiz__why" hidden></p>
       </div>` : '';
 
-    panelScroll.innerHTML = `
-      <div class="info">
-        <div class="info__depth">L${node.depth} / L8</div>
-        <h1 class="info__title">${node.title}</h1>
-        <div class="info__en">${node.en}</div>
-        <p class="info__tag">${node.tagline || ''}</p>
+    // 본문·노트·교재·사실에만 교차 링크 적용 (퀴즈 제외)
+    const content = linkify(`
         <div class="info__body">${body}</div>
         ${node.lab ? `
           <div class="lab-wrap">
@@ -194,7 +229,15 @@
           </div>` : ''}
         ${deepHtml}
         ${bookHtml}
-        ${factsHtml}
+        ${factsHtml}`, id);
+
+    panelScroll.innerHTML = `
+      <div class="info">
+        <div class="info__depth">L${node.depth} / L8</div>
+        <h1 class="info__title">${node.title}</h1>
+        <div class="info__en">${node.en}</div>
+        <p class="info__tag">${node.tagline || ''}</p>
+        ${content}
         ${quizHtml}
       </div>`;
 
@@ -202,6 +245,14 @@
       LABS[node.lab]($('labMount'));
     }
     if (ex.quiz) bindQuiz(ex.quiz);
+    // 교차 링크 클릭 → 해당 노드로 점프
+    panelScroll.querySelectorAll('.xref').forEach((a) => {
+      a.addEventListener('click', () => {
+        if (locked) return;
+        const p = findPath(a.dataset.node);
+        if (p) { path = p; render('in'); }
+      });
+    });
     panelScroll.scrollTop = 0;
   }
 
@@ -236,6 +287,27 @@
     if (visited.has(id)) return;
     visited.add(id);
     try { localStorage.setItem('cs_visited', JSON.stringify([...visited])); } catch (e) {}
+    if (visited.size === TOTAL) celebrate();
+  }
+
+  // ── 완주 축하 (1회) ───────────────────────────────────────
+  function celebrate() {
+    try { if (localStorage.getItem('cs_done')) return; localStorage.setItem('cs_done', '1'); } catch (e) {}
+    const ov = document.createElement('div');
+    ov.className = 'intro';
+    ov.innerHTML = `
+      <div class="intro__card">
+        <div class="intro__glyph">🌌</div>
+        <h2 class="intro__title">완주!</h2>
+        <p class="intro__lead">컴퓨터 본체에서 출발해 <b>원자</b>까지 — ${TOTAL}곳을 모두 탐험했습니다.<br>
+        이제 알게 됐죠: 전자의 흐름 → 트랜지스터 → 게이트 → 가산기 → ALU →<br>CPU → 컴퓨터. 가장 작은 것이 모여 화면을 그립니다.</p>
+        <button class="intro__btn">탐험 계속하기 ↻</button>
+        <p class="intro__hint">미니랩과 교재 딥다이브는 언제든 다시 열 수 있습니다</p>
+      </div>`;
+    document.body.appendChild(ov);
+    const close = () => ov.remove();
+    ov.querySelector('.intro__btn').addEventListener('click', close);
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
   }
 
   // ── URL 해시 ↔ 경로 동기화 (새로고침·공유·뒤로가기) ───────

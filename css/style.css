@@ -664,6 +664,14 @@ body::before {
 }
 .pn-swap:hover { background: rgba(240,191,90,.15); transform: translateY(-1px); }
 
+/* 용어 교차 링크 */
+.xref {
+  color: var(--cyan); text-decoration: none; cursor: pointer;
+  border-bottom: 1px dotted var(--cyan-dk);
+  transition: color .15s, border-color .15s;
+}
+.xref:hover { color: var(--gold); border-color: var(--gold-dk); }
+
 /* 📖 교재 딥다이브 (접이식) */
 .bookx {
   margin-top: 18px; border: 1px solid var(--gold-dk); border-radius: 6px;
