@@ -401,7 +401,8 @@
       ${arrowR(206, 129, 262, C.cyan)}
       <path d="M262 90 L406 90 L426 168 L282 168 Z" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
       <text x="350" y="134" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">디코더</text>
-      ${[0,1,2,3].map(i => arrowR(426, 108 + i*16, 506, C.grn)).join('')}
+      ${[0,1,2,3].map(i => arrowR(426, 108 + i*16, 506, C.grn) + flow(`M426 ${108+i*16} H500`, C.grn, 1, 1.5, 2)).join('')}
+      ${flow('M206 129 H256', C.cyan, 2, 1.4, 2.5)}
       <text x="430" y="210" class="s-label" fill="${C.grn}">→ 제어신호: ALU · 레지스터 · 메모리에 "지금 무엇을 하라"</text>
     `),
 
@@ -414,6 +415,7 @@
         <text x="${110 + i*54}" y="175" text-anchor="middle" font-family="monospace" font-size="16" fill="${i%3===0?C.grn:C.zero}">${i%3===0?1:0}</text>`).join('')}
       <text x="300" y="252" text-anchor="middle" class="s-label" fill="${C.dim}">⎍ 클럭(CLK) 신호가 올 때마다 값이 한꺼번에 저장된다</text>
       <path d="M70 234 H530" stroke="${C.goldD}" stroke-dasharray="3 4" opacity=".6"/>
+      ${flow('M70 234 H530', C.gold, 2, 1.3, 2.5)}
     `),
 
     /* ─── 캐시: L1<L2<L3 계층 ─── */
@@ -425,8 +427,9 @@
       <text x="180" y="134" class="s-label" fill="${C.cyan}">L2</text>
       <rect x="210" y="150" width="180" height="120" rx="6" fill="#1a2c20" stroke="${C.gold}"/>
       <text x="236" y="172" class="s-label" fill="${C.gold}">L1 (작고 빠름)</text>
-      <rect x="262" y="190" width="76" height="62" rx="4" fill="${C.metal}" stroke="${C.ink}"/>
+      <rect class="throb" x="262" y="190" width="76" height="62" rx="4" fill="${C.metal}" stroke="${C.ink}"/>
       <text x="300" y="226" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.ink}">CPU</text>
+      ${flow('M110 300 Q190 280 262 232', C.cyan, 2, 2.4, 2.5)}
       <text x="300" y="338" text-anchor="middle" class="s-label" fill="${C.dim}">자주 쓰는 데이터일수록 CPU 가까이</text>
     `),
 
@@ -457,7 +460,9 @@
       ${[['RAM',110],['저장장치',300],['주변기기',490]].map(([t,x]) => `
         <rect x="${x-50}" y="330" width="100" height="44" rx="4" fill="${C.pan2}" stroke="${C.ln2}"/>
         <text x="${x}" y="357" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.dim}">${t}</text>
-        <path d="M300 240 Q${x} 285 ${x} 330" stroke="${C.cyanD}" stroke-width="2" fill="none"/>`).join('')}
+        <path d="M300 240 Q${x} 285 ${x} 330" stroke="${C.cyanD}" stroke-width="2" fill="none"/>
+        ${flow(`M300 240 Q${x} 285 ${x} 330`, C.cyan, 1, 2.0, 2.5)}`).join('')}
+      ${flow('M300 90 V178', C.cyan, 2, 1.5, 2.5)}
     `),
 
     /* ─── ROM·BIOS ─── */
@@ -476,7 +481,7 @@
     gpu: svg(`
       ${lbl(40, 40, 'GPU · 수천 개의 작은 코어')}
       <rect x="70" y="70" width="380" height="280" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
-      ${(function(){let s='';for(let r=0;r<8;r++)for(let c=0;c<11;c++){s+=`<rect x="${88+c*33}" y="${90+r*31}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}" opacity="${0.5+0.5*((r+c)%2)}"/>`;}return s;})()}
+      ${(function(){let s='';for(let r=0;r<8;r++)for(let c=0;c<11;c++){s+=`<rect class="gpu-core" style="animation-delay:${(((r*11+c)%10)*0.28).toFixed(2)}s" x="${88+c*33}" y="${90+r*31}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}"/>`;}return s;})()}
       <rect x="470" y="70" width="60" height="280" rx="6" fill="#13202b" stroke="${C.ln2}"/>
       <text x="500" y="215" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}" transform="rotate(90 500 215)">VRAM</text>
       <text x="260" y="380" text-anchor="middle" class="s-label" fill="${C.dim}">같은 계산을 동시에 수천 번 — 그래픽 · AI</text>
@@ -487,12 +492,14 @@
       ${lbl(40, 40, 'PSU · AC → DC 변환')}
       <text x="100" y="120" text-anchor="middle" class="s-label" fill="${C.dim}">콘센트 (AC 220V)</text>
       <path d="M40 180 Q70 130 100 180 T160 180" fill="none" stroke="${C.gold}" stroke-width="2"/>
+      ${flow('M40 180 Q70 130 100 180 T160 180', C.gold, 2, 2.0, 2.5)}
       ${arrowR(170, 180, 240, C.cyan)}
       <rect x="244" y="146" width="120" height="68" rx="6" fill="${C.pan2}" stroke="${C.cyanD}"/>
       <text x="304" y="185" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">정류 · 평활</text>
       ${arrowR(370, 180, 430, C.grn)}
       ${[['12V',150],['5V',185],['3.3V',220]].map(([t,y]) => `
         <path d="M438 ${y} H540" stroke="${C.grn}" stroke-width="2"/>
+        ${flow(`M438 ${y} H540`, C.grn, 1, 1.6, 2.5)}
         <text x="548" y="${y+4}" class="s-label" fill="${C.grn}">${t}</text>`).join('')}
       <text x="300" y="300" text-anchor="middle" class="s-label" fill="${C.dim}">부품이 먹을 수 있는 안정된 직류로 공급</text>
     `),
@@ -505,9 +512,11 @@
       <path d="M260 320 V160 M340 320 V160" stroke="${C.metal}" stroke-width="8" stroke-linecap="round"/>
       ${fins(200, 110, 200, 70, 12, C.pan2)}
       <rect x="196" y="106" width="208" height="78" rx="4" fill="none" stroke="${C.ln2}"/>
-      <circle cx="300" cy="80" r="34" fill="${C.pan}" stroke="${C.cyanD}"/>
-      <path d="M300 80 L300 50 M300 80 L326 96 M300 80 L274 96" stroke="${C.cyanD}" stroke-width="3"/>
-      <path d="M430 300 Q460 240 430 180" stroke="#c0654a" stroke-width="2" fill="none" opacity=".7"/>
+      ${spin(`<circle cx="300" cy="80" r="34" fill="${C.pan}" stroke="${C.cyanD}"/>
+        <path d="M300 80 L300 50 M300 80 L326 96 M300 80 L274 96" stroke="${C.cyanD}" stroke-width="3"/>`)}
+      <path d="M430 300 Q460 240 430 180" stroke="#c0654a" stroke-width="2" fill="none" opacity=".35"/>
+      ${flow('M300 318 Q332 250 300 188', '#c0654a', 3, 2.2, 2.5)}
+      ${flow('M430 300 Q460 240 430 180', '#c0654a', 2, 2.6, 2)}
       <text x="470" y="245" class="s-label" fill="#c0654a">열 ↑</text>
     `),
 
@@ -521,6 +530,8 @@
         <circle cx="300" cy="${y-2}" r="4" fill="${C.cyanD}"/>`).join('')}
       ${arrowR(400, 200, 470, C.cyan)}
       <path d="M470 220 H400" stroke="${C.grn}" stroke-width="2"/><path d="M409 214 L400 220 L409 226" fill="${C.grn}"/>
+      ${flow('M402 200 H466', C.cyan, 2, 1.6, 2.5)}
+      ${flow('M468 220 H404', C.grn, 2, 1.9, 2.5)}
       <text x="480" y="195" class="s-label" fill="${C.dim}">키보드·모니터</text>
       <text x="480" y="225" class="s-label" fill="${C.dim}">·인터넷</text>
     `),
@@ -532,7 +543,8 @@
       <rect x="240" y="110" width="120" height="70" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
       <text x="300" y="150" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">컨트롤러</text>
       ${[0,1,2,3].map(i => `<rect x="${100+i*110}" y="220" width="90" height="80" rx="4" fill="#13202b" stroke="${C.ln2}"/>
-        <text x="${145+i*110}" y="265" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">NAND</text>`).join('')}
+        <text x="${145+i*110}" y="265" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">NAND</text>
+        ${flow(`M300 180 Q${145+i*110} 200 ${145+i*110} 220`, C.cyan, 1, 2.2, 2)}`).join('')}
       <text x="300" y="328" text-anchor="middle" class="s-label" fill="${C.dim}">셀에 전자를 가둬 0/1 저장 — 움직이는 부품 없음</text>
     `),
 
@@ -540,8 +552,10 @@
     hdd: svg(`
       ${lbl(40, 40, 'HDD · 자기 원반')}
       <circle cx="250" cy="220" r="140" fill="#11202c" stroke="${C.ln2}" stroke-width="1.5"/>
-      <circle cx="250" cy="220" r="95" fill="none" stroke="${C.cyanD}" stroke-dasharray="2 6" opacity=".6"/>
-      <circle cx="250" cy="220" r="60" fill="none" stroke="${C.cyanD}" stroke-dasharray="2 6" opacity=".6"/>
+      ${spin(`<circle cx="250" cy="220" r="95" fill="none" stroke="${C.cyanD}" stroke-dasharray="2 6" opacity=".6"/>
+        <circle cx="250" cy="220" r="60" fill="none" stroke="${C.cyanD}" stroke-dasharray="2 6" opacity=".6"/>
+        <circle cx="250" cy="128" r="4" fill="${C.gold}"/>
+        <circle cx="310" cy="220" r="3" fill="${C.cyanD}"/>`, 'spin-slow')}
       <circle cx="250" cy="220" r="26" fill="${C.metal}"/>
       <circle cx="250" cy="220" r="6" fill="${C.cyanD}"/>
       <circle cx="470" cy="120" r="14" fill="${C.metal}"/>
@@ -556,6 +570,7 @@
     memcell: svg(`
       ${lbl(40, 40, 'DRAM CELL · 1 트랜지스터 + 1 축전기')}
       <path d="M80 120 H520" stroke="${C.cyan}" stroke-width="2"/>
+      ${flow('M80 120 H520', C.cyan, 2, 2.4, 2.5)}
       <text x="60" y="125" text-anchor="end" class="s-label" fill="${C.cyan}">워드라인</text>
       <path d="M300 300 V360" stroke="${C.gold}" stroke-width="2"/>
       <text x="300" y="384" text-anchor="middle" class="s-label" fill="${C.gold}">비트라인</text>
@@ -563,7 +578,7 @@
       <rect x="270" y="180" width="60" height="50" rx="3" fill="${C.pan2}" stroke="${C.ink}"/>
       <text x="300" y="210" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.dim}">TR</text>
       <path d="M300 230 V270" stroke="${C.ink}" stroke-width="2"/>
-      <path d="M270 272 H330 M278 282 H322" stroke="${C.grn}" stroke-width="3"/>
+      <g class="throb"><path d="M270 272 H330 M278 282 H322" stroke="${C.grn}" stroke-width="3"/></g>
       <text x="350" y="280" class="s-label" fill="${C.grn}">축전기 (전하=1, 빔=0)</text>
       <path d="M300 282 V300" stroke="${C.gold}" stroke-width="2"/>
     `),
