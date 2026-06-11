@@ -54,22 +54,14 @@
     });
   }
 
-  // ── 렌더: 스테이지(현재 모듈 + 하위 핫스팟) ───────────────
+  // ── 렌더: 스테이지(현재 모듈 = SVG 도식 + 하위 핫스팟) ─────
   function renderStage() {
     const node = current();
+    const id = path[path.length - 1];
     const kids = node.kids || [];
+    const scene = (window.SCENES || {})[id];
 
-    const cards = kids.map((kid) => {
-      const k = NODES[kid];
-      return `
-        <button class="card" data-kid="${kid}">
-          <span class="card__glyph">${k.glyph || '◆'}</span>
-          <span class="card__title">${k.title}</span>
-          <span class="card__en">${k.en}</span>
-          <span class="card__scale">${k.scale}</span>
-          <span class="card__go">안으로 ↘</span>
-        </button>`;
-    }).join('');
+    const inner = scene ? scene : cardFallback(node, kids);
 
     stageFrame.innerHTML = `
       <div class="board">
@@ -78,19 +70,41 @@
           <span class="board__title">${node.title}</span>
           <span class="board__tag">L${node.depth} · ${node.scale}</span>
         </div>
-        <div class="board__grid ${kids.length ? '' : 'board__grid--empty'}">
-          ${kids.length ? cards : terminalCard()}
-        </div>
+        <div class="board__stage">${inner}</div>
       </div>`;
 
-    // 핫스팟 클릭 → 줌인
-    stageFrame.querySelectorAll('.card[data-kid]').forEach((c) => {
-      c.addEventListener('click', () => zoomInto(c.dataset.kid, c));
+    // 핫스팟(SVG) / 카드(폴백) 클릭 → 줌인
+    stageFrame.querySelectorAll('[data-kid]').forEach((el) => {
+      const kid = el.dataset.kid;
+      const go = () => zoomInto(kid, el);
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
     });
 
-    stageHint.textContent = kids.length
-      ? '▸ 부품을 클릭해 더 깊이 들어가세요'
+    const hotCount = stageFrame.querySelectorAll('[data-kid]').length;
+    stageHint.textContent = hotCount
+      ? '▸ 도식 위의 부품을 클릭해 그 안으로 들어가세요'
       : '● 이 줄기의 가장 깊은 곳입니다';
+  }
+
+  // 장면(SVG)이 없는 노드용 카드 폴백
+  function cardFallback(node, kids) {
+    if (!kids.length) {
+      return `<div class="board__grid board__grid--empty">${terminalCard()}</div>`;
+    }
+    const cards = kids.map((kid) => {
+      const k = NODES[kid];
+      return `<button class="card" data-kid="${kid}">
+          <span class="card__glyph">${k.glyph || '◆'}</span>
+          <span class="card__title">${k.title}</span>
+          <span class="card__en">${k.en}</span>
+          <span class="card__scale">${k.scale}</span>
+          <span class="card__go">안으로 ↘</span>
+        </button>`;
+    }).join('');
+    return `<div class="board__grid">${cards}</div>`;
   }
 
   function terminalCard() {
