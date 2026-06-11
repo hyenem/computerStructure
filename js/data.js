@@ -186,7 +186,7 @@ const NODES = {
       '아래 미니랩에선 <b>클럭(CLK)</b>을 눌러야 값이 저장되는 플립플롭 동작을 직접 확인할 수 있습니다.',
     ],
     lab: 'flipflop',
-    kids: ['reg_pc', 'reg_ir', 'reg_acc', 'reg_sp', 'reg_flags', 'reg_gp'],
+    kids: ['reg_pc', 'reg_ir', 'reg_acc', 'reg_mar', 'reg_mdr', 'reg_sp', 'reg_flags', 'reg_gp'],
   },
   cache: {
     depth: 3, title: '캐시 메모리', en: 'Cache', glyph: '▦',
@@ -351,6 +351,28 @@ const NODES = {
     body: [
       'ACC는 산술·논리 연산의 <b>중간 결과를 모으는</b> 레지스터입니다. ALU와 짝을 이룹니다.',
       'ALU의 출력이 ACC로 돌아오고, 다음 연산의 입력으로 다시 쓰이며 계산이 누적(accumulate)됩니다.',
+    ],
+    kids: [],
+  },
+  reg_mar: {
+    depth: 4, title: '메모리 주소 레지스터 (MAR)', en: 'Memory Address Register', glyph: '⌖',
+    scale: '≈ 0.4 mm', scaleM: 4e-4,
+    tagline: '접근할 메모리의 "주소"를 담는다.',
+    body: [
+      'MAR은 CPU가 <b>접근하려는 메모리의 주소</b>를 담습니다. "몇 번 칸을 읽거나 쓸지"를 메모리에 알려주는 역할이죠.',
+      'CPU가 주소를 MAR에 올리면, 그 값이 <b>주소 버스</b>를 타고 메모리로 전달되어 해당 칸이 선택됩니다.',
+      '짝꿍 <b>MDR</b>이 "무엇"을 담는다면, MAR은 "어디"를 담당합니다.',
+    ],
+    kids: [],
+  },
+  reg_mdr: {
+    depth: 4, title: '메모리 데이터 레지스터 (MDR)', en: 'Memory Data Register', glyph: '▤',
+    scale: '≈ 0.4 mm', scaleM: 4e-4,
+    tagline: '메모리와 주고받는 "값"이 잠시 머문다.',
+    body: [
+      'MDR(또는 MBR)은 <b>메모리와 주고받는 데이터</b>가 잠시 머무는 칸입니다.',
+      '메모리에서 <b>읽은 값</b>이 MDR로 들어오고, 메모리에 <b>쓸 값</b>도 MDR을 거쳐 <b>데이터 버스</b>로 나갑니다.',
+      'MAR이 "어디", MDR이 "무엇" — 둘이 짝을 이뤄 CPU와 메모리를 잇습니다.',
     ],
     kids: [],
   },

@@ -413,22 +413,24 @@
         ['reg_pc', 'PC', '프로그램 카운터', '다음 명령의 주소'],
         ['reg_ir', 'IR', '명령 레지스터', '실행 중인 명령'],
         ['reg_acc', 'ACC', '누산기', '연산 결과 누적'],
+        ['reg_mar', 'MAR', '메모리 주소 레지스터', '접근할 메모리 주소'],
+        ['reg_mdr', 'MDR', '메모리 데이터 레지스터', '메모리와 주고받는 값'],
         ['reg_sp', 'SP', '스택 포인터', '스택 꼭대기 주소'],
         ['reg_flags', 'FLG', '상태 레지스터', 'Z · N · C · V 플래그'],
         ['reg_gp', 'R0–R7', '범용 레지스터', '자유롭게 쓰는 작업칸'],
       ];
       const rows = REGS.map(([id, abbr, name, desc], i) => {
-        const y = 68 + i * 54;
+        const y = 54 + i * 45;
         return `<g class="hot" data-kid="${id}" tabindex="0" role="button" aria-label="${name}">
-          <rect class="hot__shape" x="70" y="${y}" width="460" height="44" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
-          <rect x="80" y="${y + 8}" width="84" height="28" rx="3" fill="#070a0f" stroke="${C.cyanD}"/>
-          <text x="122" y="${y + 27}" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">${abbr}</text>
-          <text x="182" y="${y + 21}" font-family="'IBM Plex Sans KR', sans-serif" font-size="13" font-weight="600" fill="${C.ink}">${name}</text>
-          <text x="182" y="${y + 36}" class="s-label" fill="${C.fnt}">${desc}</text>
-          <text class="hot__go" x="516" y="${y + 27}" text-anchor="end" font-family="monospace" font-size="11" fill="${C.cyan}">▸ 들어가기</text>
+          <rect class="hot__shape" x="60" y="${y}" width="480" height="38" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
+          <rect x="70" y="${y + 6}" width="92" height="26" rx="3" fill="#070a0f" stroke="${C.cyanD}"/>
+          <text x="116" y="${y + 23}" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">${abbr}</text>
+          <text x="180" y="${y + 17}" font-family="'IBM Plex Sans KR', sans-serif" font-size="12.5" font-weight="600" fill="${C.ink}">${name}</text>
+          <text x="180" y="${y + 31}" class="s-label" fill="${C.fnt}">${desc}</text>
+          <text class="hot__go" x="526" y="${y + 23}" text-anchor="end" font-family="monospace" font-size="11" fill="${C.cyan}">▸ 들어가기</text>
         </g>`;
       }).join('');
-      return svg(`${lbl(40, 38, 'REGISTER FILE · 레지스터 종류')}\n${rows}`);
+      return svg(`${lbl(40, 36, 'REGISTER FILE · 레지스터 종류')}\n${rows}`);
     })(),
 
     /* ─── 캐시: L1<L2<L3 계층 ─── */
@@ -703,6 +705,38 @@
       <path d="M169 240 L175 228 L181 240" fill="${C.cyanD}"/>
       ${flow('M445 202 V272 H175 V230', C.cyan, 2, 2.4, 2.5)}
       <text x="300" y="330" text-anchor="middle" class="s-label" fill="${C.dim}">결과가 ACC로 → 다시 ALU 입력으로 (누적)</text>
+    `),
+
+    reg_mar: svg(`
+      ${lbl(40, 40, 'MEMORY ADDRESS REGISTER')}
+      <rect x="70" y="150" width="150" height="50" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
+      <text x="145" y="172" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">MAR</text>
+      <text x="145" y="190" text-anchor="middle" font-family="monospace" font-size="13" fill="${C.gold}">0x02</text>
+      ${arrowR(220, 175, 300, C.gold)}
+      ${flow('M222 175 H298', C.gold, 2, 1.6, 2.5)}
+      <text x="260" y="166" class="s-label" fill="${C.fnt}">주소 버스</text>
+      ${[0,1,2,3,4].map(i => `<rect x="300" y="${96+i*44}" width="210" height="36" rx="4" fill="${i===2?'#1a2c20':C.pan2}" stroke="${i===2?C.gold:C.ln2}"/>
+        <text x="314" y="${119+i*44}" font-family="monospace" font-size="10" fill="${i===2?C.gold:C.fnt}">0x0${i}</text>
+        <text x="360" y="${119+i*44}" font-family="monospace" font-size="10" fill="${C.dim}">데이터</text>`).join('')}
+      <text x="300" y="350" text-anchor="middle" class="s-label" fill="${C.dim}">MAR이 가리킨 주소의 칸을 메모리가 선택한다</text>
+    `),
+
+    reg_mdr: svg(`
+      ${lbl(40, 40, 'MEMORY DATA REGISTER')}
+      <rect x="60" y="150" width="140" height="64" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="130" y="186" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">메모리</text>
+      <rect x="240" y="150" width="120" height="64" rx="6" fill="${C.metal}" stroke="${C.cyan}"/>
+      <text x="300" y="176" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">MDR</text>
+      <text x="300" y="198" text-anchor="middle" font-family="monospace" font-size="15" fill="${C.cyan}">42</text>
+      <rect x="400" y="150" width="140" height="64" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="470" y="186" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">CPU</text>
+      <path d="M200 176 H240 M360 176 H400" stroke="${C.grn}" stroke-width="2"/>
+      ${flow('M202 176 H238', C.grn, 1, 1.6, 2.5)}
+      ${flow('M362 176 H398', C.grn, 1, 1.6, 2.5)}
+      <path d="M400 196 H360 M240 196 H200" stroke="${C.cyanD}" stroke-width="2"/>
+      <path d="M209 190 L200 196 L209 202 M351 190 L360 196 L351 202" fill="${C.cyanD}"/>
+      <text x="300" y="262" text-anchor="middle" class="s-label" fill="${C.grn}">읽기: 메모리 → MDR → CPU</text>
+      <text x="300" y="284" text-anchor="middle" class="s-label" fill="${C.cyan}">쓰기: CPU → MDR → 메모리</text>
     `),
 
     reg_sp: svg(`
