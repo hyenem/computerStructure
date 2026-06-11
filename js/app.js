@@ -234,12 +234,14 @@
         ${bookHtml}
         ${factsHtml}`, id);
 
-    // 🚪 시리즈 다리 배지 (경계 노드 → 다음 편 예고)
+    // 🚪 시리즈 다리 배지 (경계 노드 → 다른 편으로 이동)
     const bridgeHtml = node.bridge ? `
       <div class="bridge">
         <div class="bridge__head">🚪 여기서부터는 <b>${node.bridge.series}</b>의 영역</div>
         <p class="bridge__text">${node.bridge.text}</p>
-        <div class="bridge__foot">— 시리즈 「${node.bridge.series === '네트워크' ? '회선 속으로' : '커널 속으로'}」에서 계속 (준비 중)</div>
+        <div class="bridge__foot">${node.bridge.url
+          ? `→ <a class="xref" href="${node.bridge.url}">「${node.bridge.book}」 해당 장으로 건너가기</a>`
+          : `— 시리즈 「${node.bridge.book || '다음 편'}」에서 계속 (준비 중)`}</div>
       </div>` : '';
 
     panelScroll.innerHTML = `
