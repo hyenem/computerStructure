@@ -234,6 +234,14 @@
         ${bookHtml}
         ${factsHtml}`, id);
 
+    // 🚪 시리즈 다리 배지 (경계 노드 → 다음 편 예고)
+    const bridgeHtml = node.bridge ? `
+      <div class="bridge">
+        <div class="bridge__head">🚪 여기서부터는 <b>${node.bridge.series}</b>의 영역</div>
+        <p class="bridge__text">${node.bridge.text}</p>
+        <div class="bridge__foot">— 시리즈 「${node.bridge.series === '네트워크' ? '회선 속으로' : '커널 속으로'}」에서 계속 (준비 중)</div>
+      </div>` : '';
+
     panelScroll.innerHTML = `
       <div class="info">
         <div class="info__depth">L${node.depth} / L8</div>
@@ -242,6 +250,7 @@
         <p class="info__tag">${node.tagline || ''}</p>
         ${content}
         ${quizHtml}
+        ${bridgeHtml}
       </div>`;
 
     if (node.lab && LABS[node.lab]) {

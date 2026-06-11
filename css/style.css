@@ -1101,6 +1101,24 @@ body::before {
 .intro__hint { font-size: 10.5px; color: var(--faint); margin-top: 16px; font-family: var(--mono); }
 .wordmark { cursor: pointer; }
 
+/* 🚪 시리즈 다리 배지 */
+.bridge {
+  margin-top: 18px; border-radius: 6px; overflow: hidden;
+  border: 1px dashed var(--cyan-dk);
+  background: linear-gradient(135deg, rgba(86,214,207,.05), rgba(240,191,90,.04));
+}
+.bridge__head {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .5px; color: var(--cyan);
+  padding: 10px 14px 0;
+}
+.bridge__head b { color: var(--gold); }
+.bridge__text { font-size: 12.5px; line-height: 1.7; color: var(--dim); padding: 8px 14px 0; }
+.bridge__text b { color: var(--ink); }
+.bridge__foot {
+  font-family: var(--mono); font-size: 9px; color: var(--faint);
+  padding: 8px 14px 11px; text-align: right;
+}
+
 /* ── 전체 지도 · 목차 ──────────────────────────────────── */
 .map__card {
   width: min(620px, 94vw); max-height: 86vh; padding: 0;
