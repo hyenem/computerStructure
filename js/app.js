@@ -145,6 +145,8 @@
   const XREF = [
     ['프로그램 카운터', 'reg_pc'], ['페이지 테이블', 'virtualmem'], ['가상 메모리', 'virtualmem'],
     ['명령 레지스터', 'reg_ir'], ['명령어', 'isa'], ['기계어', 'isa'], ['클럭', 'clock'],
+    ['패킷', 'packet'], ['NIC', 'nic'], ['인터럽트', 'bus_ctrl'], ['DMA', 'chipset'],
+    ['그래픽 파이프라인', 'gfx'], ['셰이더', 'gfx'], ['텐서 코어', 'tensor'], ['워프', 'warp'],
     ['주소 버스', 'bus_addr'], ['데이터 버스', 'bus_data'], ['제어 버스', 'bus_ctrl'],
     ['논리게이트', 'gate'], ['트랜지스터', 'transistor'], ['플립플롭', 'register'],
     ['메모리 셀', 'memcell'], ['제어장치', 'control'], ['파이프라인', 'pipeline'],

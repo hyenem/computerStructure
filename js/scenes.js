@@ -175,6 +175,15 @@
          <path d="M70 170 h8 v-8 h8 v8 h8 v-8 h8 v8 h8 v-8 h8 v8 h8" fill="none" stroke="${C.gold}" stroke-width="1.5" opacity=".8"/>`,
         112, 196, 'middle')}
 
+      ${hot('nic', '네트워크 칩',
+        `<rect class="hot__shape" x="64" y="222" width="64" height="50" rx="4" fill="${C.pan2}" stroke="${C.cyanD}" stroke-width="1.5"/>
+         <text x="96" y="251" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.cyan}">LAN</text>
+         <rect x="138" y="228" width="36" height="38" rx="3" fill="${C.metal}" stroke="${C.ln2}"/>
+         <rect x="146" y="236" width="20" height="16" rx="2" fill="${C.pan}"/>
+         <circle cx="144" cy="270" r="2.5" fill="${C.grn}" class="throb"/>
+         <path d="M128 247 H138" stroke="${C.cyanD}" stroke-width="1.5"/>`,
+        96, 294, 'middle')}
+
       ${hot('rom', 'ROM·BIOS',
         `<rect class="hot__shape" x="70" y="320" width="96" height="50" rx="3" fill="${C.pan2}" stroke="${C.goldD}"/>
          <rect x="78" y="328" width="80" height="34" rx="2" fill="${C.pan}"/>
@@ -666,17 +675,25 @@
       <text x="330" y="206" class="s-label" fill="${C.dim}">→ 운영체제 로드</text>
     `),
 
-    /* ─── GPU: 코어 그리드 + VRAM (둘 다 진입) ─── */
+    /* ─── GPU: 코어 + VRAM + 그래픽 파이프라인 ─── */
     gpu: svg(`
-      ${lbl(40, 40, 'GPU · 코어 + VRAM')}
+      ${lbl(40, 36, 'GPU · 코어 + VRAM + 파이프라인')}
       ${hot('gpucore', '연산 코어',
-        `<rect class="hot__shape" x="70" y="70" width="380" height="280" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
-         ${(function(){let s='';for(let r=0;r<8;r++)for(let c=0;c<11;c++){s+=`<rect class="gpu-core" style="animation-delay:${(((r*11+c)%10)*0.28).toFixed(2)}s" x="${88+c*33}" y="${90+r*31}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}"/>`;}return s;})()}`,
-        260, 374, 'middle')}
+        `<rect class="hot__shape" x="70" y="54" width="380" height="226" rx="8" fill="${C.pan2}" stroke="${C.cyanD}"/>
+         ${(function(){let s='';for(let r=0;r<6;r++)for(let c=0;c<11;c++){s+=`<rect class="gpu-core" style="animation-delay:${(((r*11+c)%10)*0.28).toFixed(2)}s" x="${88+c*33}" y="${68+r*34}" width="24" height="22" rx="2" fill="#16303a" stroke="${C.cyanD}"/>`;}return s;})()}`,
+        260, 300, 'middle')}
       ${hot('vram', 'VRAM',
-        `<rect class="hot__shape" x="470" y="70" width="60" height="280" rx="6" fill="#13202b" stroke="${C.ln2}"/>
-         <text x="500" y="215" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}" transform="rotate(90 500 215)">VRAM</text>`,
-        500, 374, 'middle')}
+        `<rect class="hot__shape" x="470" y="54" width="60" height="226" rx="6" fill="#13202b" stroke="${C.ln2}"/>
+         <text x="500" y="170" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}" transform="rotate(90 500 170)">VRAM</text>`,
+        500, 300, 'middle')}
+      ${hot('gfx', '그래픽 파이프라인',
+        `<rect class="hot__shape" x="70" y="324" width="460" height="56" rx="6" fill="#0f1620" stroke="${C.goldD}"/>
+         ${[['정점',86],['래스터',198],['픽셀',310],['출력',422]].map(([t,x],i) => `
+           <rect x="${x}" y="336" width="92" height="32" rx="4" fill="${C.pan2}" stroke="${C.ln2}"/>
+           <text x="${x+46}" y="356" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.gold}">${t}</text>
+           ${i<3?`<path d="M${x+92} 352 H${x+112}" stroke="${C.goldD}" stroke-width="1.5"/>`:''}`).join('')}
+         ${flow('M86 352 H514', C.gold, 3, 2.2, 2)}`,
+        300, 402, 'middle')}
     `),
 
     /* ─── PSU: AC→DC 변환 ─── */
@@ -791,9 +808,9 @@
       <text x="481" y="320" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.dim}">대신 트랜지스터 6개 = 비쌈</text>
     `),
 
-    /* ─── GPU 연산 코어: SIMD 방송 ─── */
+    /* ─── GPU 연산 코어: SIMD 방송 + 워프·텐서 진입 ─── */
     gpucore: (function () {
-      const cols = 6, rows = 4, x0 = 96, y0 = 156, gw = 70, gh = 50, bw = gw - 14, bh = gh - 14;
+      const cols = 6, rows = 3, x0 = 96, y0 = 150, gw = 70, gh = 46, bw = gw - 14, bh = gh - 14;
       let boxes = '', arrows = '';
       for (let c = 0; c < cols; c++) {
         const ax = x0 + c * gw + bw / 2;
@@ -808,7 +825,93 @@
         <rect x="60" y="66" width="480" height="42" rx="5" fill="${C.pan2}" stroke="${C.gold}"/>
         <text x="300" y="92" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">같은 명령을 모든 코어에 한 번에 방송</text>
         ${arrows}${boxes}
-        <text x="300" y="400" text-anchor="middle" class="s-label" fill="${C.dim}">수천 코어가 서로 다른 데이터에 동시에 — 픽셀 · 행렬</text>`);
+        ${hot('warp', '워프 스케줄러',
+          `<rect class="hot__shape" x="70" y="306" width="220" height="58" rx="6" fill="#16222e" stroke="${C.cyanD}" stroke-width="1.5"/>
+           ${[0,1,2,3].map(i => `<rect x="${84+i*52}" y="${320}" width="40" height="12" rx="2" fill="${i===1?'#1a2c20':C.pan}" stroke="${i===1?'#86e6a2':C.ln2}"/>
+             <rect x="${84+i*52}" y="${338}" width="40" height="12" rx="2" fill="${C.pan}" stroke="${C.ln2}"/>`).join('')}`,
+          180, 386, 'middle')}
+        ${hot('tensor', '텐서 코어',
+          `<rect class="hot__shape" x="310" y="306" width="220" height="58" rx="6" fill="#1a1810" stroke="${C.goldD}" stroke-width="1.5"/>
+           ${[0,1,2].map(i => `<rect x="${330+i*64}" y="318" width="34" height="34" rx="3" fill="${C.pan2}" stroke="${C.gold}"/>
+             <text x="${347+i*64}" y="340" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.gold}">${['A','B','D'][i]}</text>`).join('')}
+           <text x="380" y="340" font-family="monospace" font-size="10" fill="${C.gold}">×</text>
+           <text x="444" y="340" font-family="monospace" font-size="10" fill="${C.gold}">=</text>`,
+          420, 386, 'middle')}`);
+    })(),
+
+    /* ─── 그래픽 파이프라인: 삼각형 → 픽셀 ─── */
+    gfx: svg(`
+      ${lbl(40, 40, 'GRAPHICS PIPELINE · 삼각형에서 픽셀로')}
+      <!-- 1. 정점 -->
+      <rect x="56" y="70" width="116" height="116" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <path d="M86 160 L114 92 L146 150 Z" fill="none" stroke="${C.cyan}" stroke-width="1.5"/>
+      <circle cx="86" cy="160" r="3.5" fill="${C.cyan}"/><circle cx="114" cy="92" r="3.5" fill="${C.cyan}"/><circle cx="146" cy="150" r="3.5" fill="${C.cyan}"/>
+      <text x="114" y="206" text-anchor="middle" class="s-label" fill="${C.dim}">① 정점 변환</text>
+      <text x="114" y="222" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">3D 좌표 × 행렬</text>
+      ${arrowR(172, 128, 196, C.gold)}
+      <!-- 2. 래스터화 -->
+      <rect x="198" y="70" width="116" height="116" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      ${(function(){let s='';for(let r=0;r<7;r++)for(let c=0;c<7;c++){const x=212+c*13,y=84+r*13;const inside=(r+c>=4&&r>=1&&c<=5&&r<=5);s+=`<rect x="${x}" y="${y}" width="11" height="11" fill="${inside?'#1f4631':'#101a25'}" stroke="${C.ln}" stroke-width=".5"/>`;}return s;})()}
+      <text x="256" y="206" text-anchor="middle" class="s-label" fill="${C.dim}">② 래스터화</text>
+      <text x="256" y="222" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">삼각형 → 픽셀 판정</text>
+      ${arrowR(314, 128, 338, C.gold)}
+      <!-- 3. 셰이딩 -->
+      <rect x="340" y="70" width="116" height="116" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      ${(function(){let s='';const cols=['#2c6b4f','#3a8a5f','#56b87a','#86e6a2'];for(let r=0;r<7;r++)for(let c=0;c<7;c++){const x=354+c*13,y=84+r*13;const inside=(r+c>=4&&r>=1&&c<=5&&r<=5);if(inside)s+=`<rect x="${x}" y="${y}" width="11" height="11" fill="${cols[(r+c)%4]}"/>`;}return s;})()}
+      <text x="398" y="206" text-anchor="middle" class="s-label" fill="${C.dim}">③ 셰이딩</text>
+      <text x="398" y="222" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">픽셀마다 색 프로그램</text>
+      ${arrowR(456, 128, 480, C.gold)}
+      <!-- 4. 출력 -->
+      <rect x="482" y="70" width="92" height="116" rx="6" fill="#13202b" stroke="${C.cyanD}"/>
+      <text x="528" y="120" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.cyan}">Z-buffer</text>
+      <text x="528" y="140" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">가림 판정</text>
+      <text x="528" y="206" text-anchor="middle" class="s-label" fill="${C.dim}">④ 출력 병합</text>
+      <!-- 셰이더 노트 -->
+      <rect x="56" y="252" width="518" height="60" rx="6" fill="#16222e" stroke="${C.cyanD}"/>
+      <text x="315" y="277" text-anchor="middle" font-family="monospace" font-size="9.5" fill="${C.cyan}">②~③의 "픽셀마다 도는 작은 프로그램" = 셰이더</text>
+      <text x="315" y="297" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.dim}">셰이더가 프로그래밍 가능해지며 → GPGPU → AI 공장</text>
+      <text x="300" y="348" text-anchor="middle" class="s-label" fill="${C.dim}">이 전체가 매 프레임(1/60초) 수백만 픽셀에 대해 반복된다</text>
+      <text x="300" y="372" text-anchor="middle" class="s-label" fill="${C.fnt}">모든 3D는 삼각형 — 세 점은 항상 한 평면이라 하드웨어가 단순해진다</text>
+    `),
+
+    /* ─── 워프 스케줄러: 락스텝 + 지연 숨기기 ─── */
+    warp: svg(`
+      ${lbl(40, 40, 'WARP SCHEDULER · 32명이 한 몸')}
+      <rect x="60" y="66" width="200" height="56" rx="6" fill="${C.pan2}" stroke="${C.gold}"/>
+      <text x="160" y="90" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">스케줄러</text>
+      <text x="160" y="108" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">매 사이클: 준비된 워프 발행</text>
+      ${[['W0 — 실행 중', 150, '#86e6a2', 1], ['W1 — 메모리 대기 (zzz)', 210, '#a9803a', .5], ['W2 — 준비됨', 270, '#56d6cf', .8], ['W3 — 준비됨', 330, '#56d6cf', .8]].map(([t, y, col, op]) => `
+        <rect x="60" y="${y}" width="380" height="44" rx="5" fill="${C.pan2}" stroke="${col}" opacity="${op}"/>
+        ${Array.from({length:16},(_,i)=>`<circle cx="${78+i*22}" cy="${y+22}" r="5" fill="${col}" opacity="${op}"/>`).join('')}
+        <text x="452" y="${y+27}" font-family="monospace" font-size="8.5" fill="${col}">${t}</text>`).join('')}
+      <path d="M160 122 V150" stroke="${C.gold}" stroke-width="2"/>
+      ${flow('M160 124 V148', C.gold, 1, 1.0, 2.5)}
+      <text x="300" y="404" text-anchor="middle" class="s-label" fill="${C.dim}">W1이 기다리는 동안 W0·W2·W3이 일한다 — 기다림이 보이지 않는 비결</text>
+    `),
+
+    /* ─── 텐서 코어: 행렬곱-누산 ─── */
+    tensor: (function () {
+      function mat(x, y, col, label, vals) {
+        let s = `<text x="${x + 42}" y="${y - 10}" text-anchor="middle" font-family="monospace" font-size="9" fill="${col}">${label}</text>`;
+        for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+          s += `<rect x="${x + c * 21}" y="${y + r * 21}" width="19" height="19" rx="2" fill="${C.pan2}" stroke="${col}" opacity=".8"/>`;
+        }
+        return s;
+      }
+      return svg(`${lbl(40, 40, 'TENSOR CORE · 행렬을 통째로')}
+        ${mat(70, 110, C.cyan, 'A (FP16)')}
+        <text x="170" y="158" font-family="monospace" font-size="14" fill="${C.dim}">×</text>
+        ${mat(196, 110, C.cyan, 'B (FP16)')}
+        <text x="296" y="158" font-family="monospace" font-size="14" fill="${C.dim}">＋</text>
+        ${mat(322, 110, C.goldD, 'C (FP32)')}
+        <text x="422" y="158" font-family="monospace" font-size="14" fill="${C.dim}">=</text>
+        ${mat(448, 110, C.grn, 'D (FP32)')}
+        <rect x="70" y="230" width="462" height="44" rx="6" fill="#1a1810" stroke="${C.goldD}"/>
+        <text x="300" y="257" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.gold}">이 전체가 단 한 명령 — 곱셈-누산(FMA) 64개가 동시에</text>
+        ${flow('M76 252 H526', C.gold, 3, 1.8, 2)}
+        <text x="300" y="312" text-anchor="middle" class="s-label" fill="${C.dim}">AI 학습·추론의 본질 = 이 작은 블록을 수십억 번</text>
+        <text x="300" y="338" text-anchor="middle" class="s-label" fill="${C.fnt}">입력은 가볍게(FP16), 누산은 정확하게(FP32) — 혼합 정밀도</text>
+        <text x="300" y="374" text-anchor="middle" class="s-label" fill="${C.fnt}">전용화의 시대: TPU·NPU도 같은 철학의 형제들</text>`);
     })(),
 
     /* ─── VRAM: 넓은 대역폭 ─── */
@@ -1013,6 +1116,66 @@
       <text x="498" y="324" text-anchor="middle" font-family="monospace" font-size="8" fill="#e0916f">opcode</text>
       <text x="300" y="362" text-anchor="middle" class="s-label" fill="${C.dim}">디코더는 이 칸들을 잘라 읽는 회로 — CPU가 먹는 건 이 비트뿐</text>
       <text x="300" y="386" text-anchor="middle" class="s-label" fill="${C.fnt}">이 칸 나누기의 약속 전체 = ISA (x86 · ARM · RISC-V)</text>
+    `),
+
+    /* ─── NIC: 칩 → PHY → 포트 → 전선 ─── */
+    nic: svg(`
+      ${lbl(40, 40, 'NETWORK INTERFACE · 비트의 항구')}
+      <rect x="56" y="100" width="150" height="110" rx="6" fill="${C.pan2}" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <text x="131" y="142" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.cyan}">MAC 계층</text>
+      <text x="131" y="162" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">프레임 조립 · CRC 검사</text>
+      <text x="131" y="186" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.goldD}">MAC: 5A:3F:…:C1 (48bit)</text>
+      ${arrowR(206, 155, 260, C.cyan)}
+      <rect x="262" y="118" width="110" height="76" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="317" y="152" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">PHY</text>
+      <text x="317" y="172" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">비트 ↔ 전기 신호</text>
+      ${arrowR(372, 155, 420, C.grn)}
+      <rect x="422" y="120" width="70" height="72" rx="4" fill="${C.metal}" stroke="${C.ln2}"/>
+      <rect x="438" y="138" width="38" height="28" rx="3" fill="${C.pan}"/>
+      <text x="457" y="208" text-anchor="middle" class="s-label" fill="${C.dim}">RJ45</text>
+      <circle cx="432" cy="184" r="3" fill="${C.grn}" class="throb"/>
+      <!-- 트위스티드 페어로 나가는 비트 → 패킷의 정체로 -->
+      ${hot('packet', '패킷이란?',
+        `<rect class="hot__shape" x="486" y="118" width="100" height="76" rx="5" fill="#0f1620" stroke="${C.cyanD}"/>
+         <path d="M492 142 q20 8 40 0 t40 0" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+         <path d="M492 158 q20 -8 40 0 t40 0" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+         ${flow('M492 150 H578', C.grn, 3, 1.1, 2)}
+         <text x="536" y="186" text-anchor="middle" font-family="monospace" font-size="7.5" fill="${C.fnt}">전선 위의 0과 1</text>`,
+        536, 216, 'middle')}
+      <!-- 도착 처리: DMA + 인터럽트 -->
+      <path d="M131 210 V268" stroke="${C.gold}" stroke-width="1.5" stroke-dasharray="4 3"/>
+      ${flow('M131 212 V266', C.gold, 1, 1.6, 2)}
+      <rect x="60" y="270" width="142" height="42" rx="5" fill="#1a1810" stroke="${C.goldD}"/>
+      <text x="131" y="288" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.gold}">DMA → 메모리 링 버퍼</text>
+      <text x="131" y="303" text-anchor="middle" font-family="monospace" font-size="8.5" fill="${C.gold}">인터럽트 → CPU 호출</text>
+      <text x="300" y="356" text-anchor="middle" class="s-label" fill="${C.dim}">패킷 도착 = DMA로 쓰고 벨 누르기 — 하드웨어와 OS가 만나는 현장</text>
+      <text x="300" y="382" text-anchor="middle" class="s-label" fill="${C.fnt}">Wi-Fi도 같은 구조 — 매체가 전선에서 전파로 바뀔 뿐</text>
+    `),
+
+    /* ─── 패킷: 캡슐화 양파 ─── */
+    packet: svg(`
+      ${lbl(40, 40, 'PACKET · 겹겹의 봉투 (캡슐화)')}
+      <rect x="90" y="80" width="420" height="180" rx="8" fill="none" stroke="${C.cyanD}" stroke-width="1.5"/>
+      <text x="124" y="102" font-family="monospace" font-size="9" fill="${C.cyan}">이더넷</text>
+      <text x="476" y="102" text-anchor="end" font-family="monospace" font-size="8" fill="${C.fnt}">다음 장비 MAC · CRC</text>
+      <rect x="130" y="112" width="340" height="116" rx="6" fill="none" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="160" y="132" font-family="monospace" font-size="9" fill="${C.gold}">IP</text>
+      <text x="438" y="132" text-anchor="end" font-family="monospace" font-size="8" fill="${C.fnt}">목적지 컴퓨터 주소</text>
+      <rect x="170" y="142" width="260" height="56" rx="5" fill="none" stroke="${C.grn}" stroke-width="1.5"/>
+      <text x="196" y="161" font-family="monospace" font-size="9" fill="${C.grn}">TCP</text>
+      <text x="402" y="161" text-anchor="end" font-family="monospace" font-size="8" fill="${C.fnt}">포트 · 순서번호</text>
+      <rect x="210" y="168" width="180" height="22" rx="3" fill="#16222e" stroke="${C.ink}"/>
+      <text x="300" y="183" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.ink}">데이터 "안녕!"</text>
+      <text x="300" y="246" text-anchor="middle" font-family="monospace" font-size="8" fill="${C.fnt}">받는 쪽은 봉투를 거꾸로 벗긴다 →</text>
+      <!-- 직렬화: 비트가 되어 전선으로 -->
+      <path d="M300 260 V286" stroke="${C.cyanD}" stroke-width="1.5"/>
+      ${flow('M300 262 V284', C.cyan, 1, 1.2, 2)}
+      <text x="312" y="278" font-family="monospace" font-size="8" fill="${C.cyanD}">직렬화</text>
+      <rect x="70" y="290" width="460" height="34" rx="4" fill="#0f1620" stroke="${C.ln2}"/>
+      <text x="300" y="312" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.grn}">…01001000 01101001 01000101 01010100 01001000…</text>
+      ${flow('M76 307 H524', C.grn, 4, 1.6, 2)}
+      <text x="300" y="356" text-anchor="middle" class="s-label" fill="${C.dim}">라우터는 IP 봉투만 보고 릴레이 — 봉투 덕에 각 층이 서로를 몰라도 된다</text>
+      <text x="300" y="382" text-anchor="middle" class="s-label" fill="${C.fnt}">인터넷의 정체도 결국 — 약속된 0과 1의 행렬</text>
     `),
 
     /* ─── 파이프라인: 5단계 사선 중첩 ─── */
