@@ -178,6 +178,11 @@
       ${flow('M376 205 H430', C.cyan, 2, 1.8, 2.5)}
       ${flow('M291 290 V318', C.cyan, 2, 1.6, 2.5)}
       ${flow('M250 352 H166', C.gold, 2, 2.2, 2.5)}
+
+      <!-- 등장(等長) 배선: 신호 도착 시각을 맞추는 지그재그 -->
+      <path d="M382 246 h14 v8 h-10 v8 h14 v8 h-10 v8 h14" fill="none" stroke="${C.pcbL}" stroke-width="1.2" opacity=".8"/>
+      <path d="M404 246 h8 v8 h-5 v8 h8 v8 h-5 v8 h8" fill="none" stroke="${C.pcbL}" stroke-width="1.2" opacity=".8"/>
+      <text x="394" y="296" font-family="monospace" font-size="7.5" fill="${C.fnt}">등장 배선 — 길이를 맞춰 동시 도착</text>
     `),
 
     /* ─── L2 CPU: 다이 플로어플랜 ─── */
@@ -410,8 +415,19 @@
         const x = ox + c * gap, y = oy + r * gap * .8;
         if (c < cols - 1) bonds.push(`<line x1="${x}" y1="${y}" x2="${x + gap}" y2="${y}" stroke="#2c7a78" stroke-width="1.5" opacity=".5"/>`);
         if (r < rows - 1) bonds.push(`<line x1="${x}" y1="${y}" x2="${x}" y2="${y + gap * .8}" stroke="#2c7a78" stroke-width="1.5" opacity=".5"/>`);
-        nodes.push(`<circle cx="${x}" cy="${y}" r="13" fill="#16303a" stroke="#56d6cf" stroke-width="1.5"/>
-                    <text x="${x}" y="${y + 4}" text-anchor="middle" font-family="monospace" font-size="9" fill="#86e6a2">Si</text>`);
+        if (r === 1 && c === 3) {
+          // 도핑된 인(P) 원자 — 가전자 5개라 전자 1개가 남는다 (N형)
+          nodes.push(`<circle cx="${x}" cy="${y}" r="15" fill="#2c2416" stroke="#f0bf5a" stroke-width="2"/>
+                      <text x="${x}" y="${y + 4}" text-anchor="middle" font-family="monospace" font-size="10" fill="#f0bf5a">P</text>
+                      <circle cx="${x + 24}" cy="${y - 20}" r="4.5" fill="#86e6a2">
+                        <animate attributeName="opacity" values="1;.4;1" dur="1.6s" repeatCount="indefinite"/>
+                      </circle>
+                      <text x="${x + 34}" y="${y - 30}" font-family="monospace" font-size="8" fill="#86e6a2">잉여 전자!</text>
+                      <text x="${x}" y="${y + 34}" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#a9803a">도핑된 인(燐) — N형의 씨앗</text>`);
+        } else {
+          nodes.push(`<circle cx="${x}" cy="${y}" r="13" fill="#16303a" stroke="#56d6cf" stroke-width="1.5"/>
+                      <text x="${x}" y="${y + 4}" text-anchor="middle" font-family="monospace" font-size="9" fill="#86e6a2">Si</text>`);
+        }
       }
       // 떠도는 전자
       const e = [[170,150],[390,230],[280,310],[480,170]].map(([x,y]) =>
@@ -446,6 +462,10 @@
       ${lbl(40, 40, 'RAM · 메모리 격자')}
       <rect x="60" y="70" width="480" height="280" rx="6" fill="${C.pcb}" stroke="${C.pcbL}"/>
       ${(function(){let s='';for(let r=0;r<4;r++)for(let c=0;c<8;c++){s+=`<rect x="${84+c*56}" y="${94+r*60}" width="40" height="40" rx="3" fill="#13202b" stroke="${C.ln2}"/>`;}return s;})()}
+      <!-- 열린 행(row) → 행 버퍼: 같은 행 접근이 빠른 이유 -->
+      <rect x="76" y="148" width="448" height="52" rx="5" fill="none" stroke="${C.cyan}" stroke-dasharray="5 4" opacity=".75"/>
+      ${flow('M80 174 H520', C.cyan, 3, 2.2, 2)}
+      <text x="300" y="338" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.cyanD}">점선 = 열린 행(row) — 통째로 행 버퍼에 복사되어 같은 행 접근이 빠르다</text>
       ${hot('memcell', '메모리 셀',
         `<rect class="hot__shape" x="82" y="92" width="44" height="44" rx="3" fill="#1a2c20" stroke="${C.gold}" stroke-width="2"/>
          <path d="M104 136 Q104 168 84 188" fill="none" stroke="${C.gold}" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`,
