@@ -199,9 +199,10 @@
         200, 232, 'middle')}
 
       ${hot('cache', '캐시 메모리',
-        `<rect class="hot__shape" x="110" y="266" width="380" height="70" rx="4" fill="#13202b" stroke="${C.ln2}"/>
-         ${fins(120, 276, 360, 50, 26, C.pan2)}`,
-        300, 308, 'middle')}
+        `<rect class="hot__shape" x="110" y="266" width="380" height="60" rx="4" fill="#13202b" stroke="${C.ln2}"/>
+         ${fins(120, 274, 360, 44, 26, C.pan2)}`,
+        300, 300, 'middle')}
+      <text x="300" y="372" text-anchor="middle" class="s-label" fill="${C.dim}">이 한 묶음이 "코어" 1개 — 요즘 CPU엔 이런 코어가 4·8·16개</text>
     `),
 
     /* ─── L3 ALU: 사다리꼴 회로기호 ─── */
@@ -406,17 +407,29 @@
       <text x="430" y="210" class="s-label" fill="${C.grn}">→ 제어신호: ALU · 레지스터 · 메모리에 "지금 무엇을 하라"</text>
     `),
 
-    /* ─── 레지스터 ─── */
-    register: svg(`
-      ${lbl(40, 40, 'REGISTER · 8비트 (플립플롭 ×8)')}
-      <rect x="70" y="120" width="460" height="96" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
-      ${[0,1,2,3,4,5,6,7].map(i => `
-        <rect x="${88 + i*54}" y="142" width="44" height="52" rx="3" fill="${C.pan}" stroke="${C.cyanD}"/>
-        <text x="${110 + i*54}" y="175" text-anchor="middle" font-family="monospace" font-size="16" fill="${i%3===0?C.grn:C.zero}">${i%3===0?1:0}</text>`).join('')}
-      <text x="300" y="252" text-anchor="middle" class="s-label" fill="${C.dim}">⎍ 클럭(CLK) 신호가 올 때마다 값이 한꺼번에 저장된다</text>
-      <path d="M70 234 H530" stroke="${C.goldD}" stroke-dasharray="3 4" opacity=".6"/>
-      ${flow('M70 234 H530', C.gold, 2, 1.3, 2.5)}
-    `),
+    /* ─── 레지스터: 종류별 파일(각 행이 진입) ─── */
+    register: (function () {
+      const REGS = [
+        ['reg_pc', 'PC', '프로그램 카운터', '다음 명령의 주소'],
+        ['reg_ir', 'IR', '명령 레지스터', '실행 중인 명령'],
+        ['reg_acc', 'ACC', '누산기', '연산 결과 누적'],
+        ['reg_sp', 'SP', '스택 포인터', '스택 꼭대기 주소'],
+        ['reg_flags', 'FLG', '상태 레지스터', 'Z · N · C · V 플래그'],
+        ['reg_gp', 'R0–R7', '범용 레지스터', '자유롭게 쓰는 작업칸'],
+      ];
+      const rows = REGS.map(([id, abbr, name, desc], i) => {
+        const y = 68 + i * 54;
+        return `<g class="hot" data-kid="${id}" tabindex="0" role="button" aria-label="${name}">
+          <rect class="hot__shape" x="70" y="${y}" width="460" height="44" rx="5" fill="${C.pan2}" stroke="${C.ln2}"/>
+          <rect x="80" y="${y + 8}" width="84" height="28" rx="3" fill="#070a0f" stroke="${C.cyanD}"/>
+          <text x="122" y="${y + 27}" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">${abbr}</text>
+          <text x="182" y="${y + 21}" font-family="'IBM Plex Sans KR', sans-serif" font-size="13" font-weight="600" fill="${C.ink}">${name}</text>
+          <text x="182" y="${y + 36}" class="s-label" fill="${C.fnt}">${desc}</text>
+          <text class="hot__go" x="516" y="${y + 27}" text-anchor="end" font-family="monospace" font-size="11" fill="${C.cyan}">▸ 들어가기</text>
+        </g>`;
+      }).join('');
+      return svg(`${lbl(40, 38, 'REGISTER FILE · 레지스터 종류')}\n${rows}`);
+    })(),
 
     /* ─── 캐시: L1<L2<L3 계층 ─── */
     cache: svg(`
@@ -650,6 +663,73 @@
       <rect x="222" y="150" width="156" height="34" rx="3" fill="${C.metal}" stroke="${C.cyan}"/>
       <text x="300" y="172" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.cyan}">제어 게이트</text>
       <text x="300" y="392" text-anchor="middle" class="s-label" fill="${C.grn}">절연체에 갇힌 전자 = 1 · 없으면 0 (전원 꺼져도 유지)</text>
+    `),
+
+    /* ─── 레지스터 종류별 도식 ─── */
+    reg_pc: svg(`
+      ${lbl(40, 40, 'PROGRAM COUNTER')}
+      ${[0,1,2,3,4].map(i => `<rect x="300" y="${88+i*52}" width="210" height="42" rx="4" fill="${i===1?'#1a2c20':C.pan2}" stroke="${i===1?C.gold:C.ln2}"/>
+        <text x="314" y="${114+i*52}" font-family="monospace" font-size="10" fill="${C.fnt}">0x0${i}</text>
+        <text x="360" y="${114+i*52}" font-family="monospace" font-size="11" fill="${i===1?C.gold:C.dim}">명령 ${i}</text>`).join('')}
+      <rect x="80" y="120" width="150" height="40" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
+      <text x="155" y="145" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">PC = 0x01</text>
+      ${arrowR(230, 140, 300, C.gold)}
+      ${flow('M232 140 H298', C.gold, 1, 1.6, 2.5)}
+      <text x="300" y="386" text-anchor="middle" class="s-label" fill="${C.dim}">명령을 가져올 때마다 PC +1 → 자연히 다음 명령으로</text>
+    `),
+
+    reg_ir: svg(`
+      ${lbl(40, 40, 'INSTRUCTION REGISTER')}
+      <rect x="80" y="150" width="210" height="64" rx="6" fill="${C.pan2}" stroke="${C.cyan}"/>
+      <text x="185" y="176" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">IR · 현재 명령</text>
+      <text x="185" y="198" text-anchor="middle" font-family="monospace" font-size="14" fill="${C.cyan}">ADD R1, R2</text>
+      ${arrowR(290, 182, 360, C.cyan)}
+      ${flow('M292 182 H358', C.cyan, 2, 1.6, 2.5)}
+      <path d="M360 150 L500 150 L478 232 L382 232 Z" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="440" y="196" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">디코더</text>
+      <text x="300" y="320" text-anchor="middle" class="s-label" fill="${C.dim}">담긴 명령을 제어장치가 해석해 신호로 바꾼다</text>
+    `),
+
+    reg_acc: svg(`
+      ${lbl(40, 40, 'ACCUMULATOR')}
+      <path d="M110 120 L240 120 L210 224 L140 224 Z" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
+      <text x="175" y="178" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.gold}">ALU</text>
+      <rect x="370" y="146" width="150" height="56" rx="6" fill="${C.metal}" stroke="${C.cyan}"/>
+      <text x="445" y="170" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">ACC</text>
+      <text x="445" y="192" text-anchor="middle" font-family="monospace" font-size="16" fill="${C.grn}">8</text>
+      ${arrowR(240, 172, 370, C.grn)}
+      ${flow('M242 172 H368', C.grn, 2, 1.6, 2.5)}
+      <path d="M445 202 V272 H175 V228" fill="none" stroke="${C.cyanD}" stroke-width="2"/>
+      <path d="M169 240 L175 228 L181 240" fill="${C.cyanD}"/>
+      ${flow('M445 202 V272 H175 V230', C.cyan, 2, 2.4, 2.5)}
+      <text x="300" y="330" text-anchor="middle" class="s-label" fill="${C.dim}">결과가 ACC로 → 다시 ALU 입력으로 (누적)</text>
+    `),
+
+    reg_sp: svg(`
+      ${lbl(40, 40, 'STACK POINTER')}
+      ${[0,1,2,3].map(i => `<rect x="230" y="${108+i*56}" width="170" height="48" rx="4" fill="${i===0?'#1a2c20':C.pan2}" stroke="${i===0?C.gold:C.ln2}"/>
+        <text x="315" y="${137+i*56}" text-anchor="middle" font-family="monospace" font-size="11" fill="${i===0?C.gold:C.dim}">${i===0?'← 꼭대기 (top)':'스택 데이터'}</text>`).join('')}
+      <rect x="70" y="108" width="120" height="48" rx="5" fill="${C.metal}" stroke="${C.gold}"/>
+      <text x="130" y="137" text-anchor="middle" font-family="monospace" font-size="13" fill="${C.gold}">SP</text>
+      ${arrowR(190, 132, 230, C.gold)}
+      <text x="300" y="368" text-anchor="middle" class="s-label" fill="${C.dim}">push/pop 할 때 SP가 오르내림 — 함수 호출·복귀에 사용</text>
+    `),
+
+    reg_flags: svg(`
+      ${lbl(40, 40, 'STATUS REGISTER · FLAGS')}
+      ${[['Z','결과가 0?'],['N','음수?'],['C','자리올림?'],['V','오버플로?']].map(([f,d],i) => `
+        <rect x="${78+i*120}" y="140" width="98" height="64" rx="6" fill="${C.pan2}" stroke="${C.gold}"/>
+        <text x="${127+i*120}" y="180" text-anchor="middle" font-family="monospace" font-size="22" fill="${C.gold}">${f}</text>
+        <text x="${127+i*120}" y="230" text-anchor="middle" class="s-label" fill="${C.dim}">${d}</text>`).join('')}
+      <text x="300" y="300" text-anchor="middle" class="s-label" fill="${C.cyan}">조건 분기(if문)가 이 플래그를 보고 갈림길을 정한다</text>
+    `),
+
+    reg_gp: svg(`
+      ${lbl(40, 40, 'GENERAL PURPOSE · R0–R7')}
+      ${[42,7,0,255,13,88,1,64].map((v,i) => `<rect x="${88+(i%4)*116}" y="${118+Math.floor(i/4)*92}" width="100" height="72" rx="5" fill="${C.pan2}" stroke="${C.cyanD}"/>
+        <text x="${138+(i%4)*116}" y="${146+Math.floor(i/4)*92}" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">R${i}</text>
+        <text x="${138+(i%4)*116}" y="${172+Math.floor(i/4)*92}" text-anchor="middle" font-family="monospace" font-size="15" fill="${C.ink}">${v}</text>`).join('')}
+      <text x="300" y="334" text-anchor="middle" class="s-label" fill="${C.dim}">프로그램이 자유롭게 값을 담아 쓰는 작업용 칸들</text>
     `),
   };
 
