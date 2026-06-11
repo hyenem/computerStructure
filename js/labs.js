@@ -178,4 +178,88 @@ const LABS = {
     slider.addEventListener('input', render);
     render();
   },
+
+  /* ── 페치-디코드-실행: 한 단계씩 명령 처리 ── */
+  fdx(el) {
+    const PROG = [
+      { text: 'LOAD 5', op: 'LOAD', arg: 5 },
+      { text: 'ADD 3',  op: 'ADD',  arg: 3 },
+      { text: 'OUT',    op: 'OUT' },
+    ];
+    const PLABEL = { idle: '대기', fetch: '가져오기 FETCH', decode: '해석 DECODE', execute: '실행 EXECUTE' };
+    // 마이크로 스텝 시퀀스
+    const seq = [];
+    PROG.forEach((_, i) => { seq.push({ pc: i, ph: 'fetch' }, { pc: i, ph: 'decode' }, { pc: i, ph: 'execute' }); });
+
+    let si = -1, acc = 0, ir = null, out = null;
+
+    el.innerHTML = `
+      <div class="lab lab--fdx">
+        <div class="fdx-top">
+          <span class="fdx-phase" data-p="idle">대기</span>
+          <button class="fdx-next">▸ 다음 단계</button>
+        </div>
+        <div class="fdx-grid">
+          <div class="fdx-mem">
+            ${PROG.map((p, i) => `<div class="fdx-row" data-i="${i}"><span class="fdx-ptr">▸</span><span>${p.text}</span></div>`).join('')}
+          </div>
+          <div class="fdx-regs">
+            <div class="fdx-reg" data-r="pc"><span>PC</span><b>0</b></div>
+            <div class="fdx-reg" data-r="ir"><span>IR</span><b>—</b></div>
+            <div class="fdx-reg" data-r="acc"><span>ACC</span><b>0</b></div>
+            <div class="fdx-reg" data-r="out"><span>OUT</span><b>—</b></div>
+          </div>
+        </div>
+        <p class="lab__caption">버튼을 눌러 한 단계씩 — CPU가 명령을 처리하는 과정</p>
+      </div>`;
+
+    const $ = (s) => el.querySelector(s);
+    const phaseEl = $('.fdx-phase'), nextBtn = $('.fdx-next'), cap = $('.lab__caption');
+    const rows = el.querySelectorAll('.fdx-row');
+    const reg = (r) => el.querySelector(`.fdx-reg[data-r="${r}"]`);
+
+    function setReg(r, v) { reg(r).querySelector('b').textContent = v; }
+
+    function paint(step, caption, hotReg) {
+      const ph = step ? step.ph : 'idle';
+      phaseEl.textContent = PLABEL[ph];
+      phaseEl.dataset.p = ph;
+      const last = si >= seq.length - 1;
+      nextBtn.textContent = last ? '↻ 처음부터' : '▸ 다음 단계';
+      rows.forEach((row, i) => row.classList.toggle('active', step && i === step.pc));
+      setReg('pc', step ? step.pc : 0);
+      setReg('ir', ir ? ir.text : '—');
+      setReg('acc', acc);
+      setReg('out', out == null ? '—' : out);
+      ['pc','ir','acc','out'].forEach(r => reg(r).classList.toggle('hot', r === hotReg));
+      cap.innerHTML = caption;
+    }
+
+    function step() {
+      if (si >= seq.length - 1) { // 처음부터
+        si = -1; acc = 0; ir = null; out = null;
+        paint(null, '버튼을 눌러 한 단계씩 — CPU가 명령을 처리하는 과정', null);
+        return;
+      }
+      si++;
+      const s = seq[si];
+      let cap = '', hot = null;
+      if (s.ph === 'fetch') {
+        ir = PROG[s.pc];
+        cap = `<b>가져오기</b> — PC가 가리키는 명령 「${ir.text}」을 IR로 불러옴`; hot = 'ir';
+      } else if (s.ph === 'decode') {
+        cap = `<b>해석</b> — IR의 명령을 풀이: 동작은 <b>${ir.op}</b>`; hot = 'ir';
+      } else { // execute
+        const o = ir;
+        if (o.op === 'LOAD') { acc = o.arg; cap = `<b>실행</b> — 값 ${o.arg}을 ACC에 적재 → ACC=${acc}`; hot = 'acc'; }
+        else if (o.op === 'ADD') { acc += o.arg; cap = `<b>실행</b> — ACC에 ${o.arg}을 더함 → ACC=${acc}`; hot = 'acc'; }
+        else if (o.op === 'OUT') { out = acc; cap = `<b>실행</b> — ACC 값을 출력 → OUT=${out}`; hot = 'out'; }
+        if (si >= seq.length - 1) cap += ' &nbsp;· 프로그램 끝!';
+      }
+      paint(s, cap, hot);
+    }
+
+    nextBtn.addEventListener('click', step);
+    paint(null, '버튼을 눌러 한 단계씩 — CPU가 명령을 처리하는 과정', null);
+  },
 };

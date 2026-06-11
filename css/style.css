@@ -472,6 +472,44 @@ body::before {
 .tr-slider { flex: 1; accent-color: var(--gold); height: 3px; }
 .tr-volt { width: 38px; text-align: right; color: var(--gold); }
 
+/* 페치-디코드-실행 랩 */
+.fdx-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.fdx-phase {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .5px;
+  padding: 4px 11px; border-radius: 20px; border: 1px solid var(--line-2); color: var(--dim);
+  transition: all .2s;
+}
+.fdx-phase[data-p="fetch"]   { color: var(--cyan); border-color: var(--cyan-dk); background: rgba(86,214,207,.08); }
+.fdx-phase[data-p="decode"]  { color: var(--gold); border-color: var(--gold-dk); background: rgba(240,191,90,.08); }
+.fdx-phase[data-p="execute"] { color: var(--green); border-color: #3f7a52; background: rgba(134,230,162,.08); }
+.fdx-next {
+  font-family: var(--mono); font-size: 12px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--cyan-dk); border-radius: var(--r);
+  padding: 7px 13px; cursor: pointer; transition: all .15s;
+}
+.fdx-next:hover { background: rgba(86,214,207,.1); color: var(--cyan); }
+.fdx-grid { display: grid; grid-template-columns: 1fr 92px; gap: 12px; }
+.fdx-mem { display: grid; gap: 6px; align-content: start; }
+.fdx-row {
+  font-family: var(--mono); font-size: 12px; color: var(--dim);
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--r);
+  transition: all .2s;
+}
+.fdx-row .fdx-ptr { color: var(--gold); opacity: 0; transition: opacity .2s; }
+.fdx-row.active { border-color: var(--gold); color: var(--ink); background: rgba(240,191,90,.08); }
+.fdx-row.active .fdx-ptr { opacity: 1; }
+.fdx-regs { display: grid; gap: 6px; align-content: start; }
+.fdx-reg {
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 8px; border: 1px solid var(--line-2); border-radius: var(--r);
+  transition: all .2s;
+}
+.fdx-reg b { color: var(--ink); font-weight: 600; }
+.fdx-reg.hot { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(86,214,207,.3); }
+.fdx-reg.hot b { color: var(--cyan); }
+
 /* ── 하단 컨트롤 ───────────────────────────────────────── */
 .controls {
   display: flex; align-items: center; gap: 14px;
