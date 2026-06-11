@@ -468,20 +468,78 @@
         300, 406, 'middle')}
     `),
 
-    /* ─── 칩셋·버스 ─── */
-    chipset: svg(`
-      ${lbl(40, 40, 'CHIPSET · 버스 교차로')}
-      <rect x="250" y="40" width="100" height="44" rx="4" fill="${C.metal}" stroke="${C.cyanD}"/>
-      <text x="300" y="67" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.cyan}">CPU</text>
-      <rect x="244" y="180" width="112" height="60" rx="5" fill="${C.pan2}" stroke="${C.gold}" stroke-width="1.5"/>
-      <text x="300" y="216" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.gold}">칩셋</text>
-      <path d="M300 84 V180" stroke="${C.cyan}" stroke-width="3"/>
-      ${[['RAM',110],['저장장치',300],['주변기기',490]].map(([t,x]) => `
-        <rect x="${x-50}" y="330" width="100" height="44" rx="4" fill="${C.pan2}" stroke="${C.ln2}"/>
-        <text x="${x}" y="357" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.dim}">${t}</text>
-        <path d="M300 240 Q${x} 285 ${x} 330" stroke="${C.cyanD}" stroke-width="2" fill="none"/>
-        ${flow(`M300 240 Q${x} 285 ${x} 330`, C.cyan, 1, 2.0, 2.5)}`).join('')}
-      ${flow('M300 90 V178', C.cyan, 2, 1.5, 2.5)}
+    /* ─── 칩셋·버스: 세 갈래 길(각 진입) ─── */
+    chipset: (function () {
+      function lane(id, name, y, col, two) {
+        const x1 = 250, x2 = 414;
+        const ar = two
+          ? `<path d="M${x1} ${y} H${x2}" stroke="${col}" stroke-width="2"/><path d="M${x1+9} ${y-6} L${x1} ${y} L${x1+9} ${y+6} M${x2-9} ${y-6} L${x2} ${y} L${x2-9} ${y+6}" fill="none" stroke="${col}" stroke-width="2"/>`
+          : `<path d="M${x1} ${y} H${x2}" stroke="${col}" stroke-width="2"/><path d="M${x2-9} ${y-6} L${x2} ${y} L${x2-9} ${y+6}" fill="${col}"/>`;
+        const fl = two
+          ? flow(`M${x1+4} ${y} H${x2-4}`, col, 2, 1.9, 2.5) + flow(`M${x2-4} ${y} H${x1+4}`, col, 1, 2.4, 2.5)
+          : flow(`M${x1+2} ${y} H${x2-2}`, col, 2, 1.8, 2.5);
+        return `<g class="hot" data-kid="${id}" tabindex="0" role="button" aria-label="${name}">
+          <rect class="hot__shape" x="160" y="${y-18}" width="280" height="36" rx="5" fill="#0f1620" stroke="${C.ln2}"/>
+          <text x="172" y="${y+4}" font-family="'IBM Plex Sans KR', sans-serif" font-size="12" font-weight="600" fill="${col}">${name}</text>
+          ${ar}${fl}
+          <text class="hot__go" x="434" y="${y-22}" text-anchor="end" font-family="monospace" font-size="10" fill="${C.cyan}">▸</text>
+        </g>`;
+      }
+      return svg(`${lbl(40, 40, 'BUS · 칩셋이 잇는 세 갈래 길')}
+        <rect x="44" y="118" width="116" height="184" rx="6" fill="${C.metal}" stroke="${C.cyanD}"/>
+        <text x="102" y="214" text-anchor="middle" font-family="monospace" font-size="13" fill="${C.cyan}">CPU</text>
+        <rect x="440" y="118" width="116" height="184" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+        <text x="498" y="206" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">메모리</text>
+        <text x="498" y="224" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">·장치</text>
+        ${lane('bus_addr', '주소 버스', 158, C.gold, false)}
+        ${lane('bus_data', '데이터 버스', 210, C.grn, true)}
+        ${lane('bus_ctrl', '제어 버스', 262, C.cyan, false)}`);
+    })(),
+
+    /* ─── 주소 버스: 단방향 ─── */
+    bus_addr: svg(`
+      ${lbl(40, 40, 'ADDRESS BUS · 단방향')}
+      <rect x="56" y="116" width="134" height="168" rx="6" fill="${C.metal}" stroke="${C.gold}"/>
+      <text x="123" y="196" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.cyan}">CPU</text>
+      <text x="123" y="216" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">(MAR)</text>
+      <rect x="410" y="116" width="134" height="168" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="477" y="205" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">메모리</text>
+      ${[0,1,2,3,4,5,6,7].map(i => `<path d="M190 ${140+i*20} H404" stroke="${C.gold}" stroke-width="1.5"/><path d="M396 ${134+i*20} L404 ${140+i*20} L396 ${146+i*20}" fill="${C.gold}"/>`).join('')}
+      ${flow('M192 160 H400', C.gold, 2, 1.6, 2.5)}
+      ${flow('M192 240 H400', C.gold, 2, 1.9, 2.5)}
+      <text x="300" y="316" text-anchor="middle" class="s-label" fill="${C.dim}">폭(선 개수) = 주소 비트 수 → 다룰 수 있는 메모리 크기</text>
+    `),
+
+    /* ─── 데이터 버스: 양방향 ─── */
+    bus_data: svg(`
+      ${lbl(40, 40, 'DATA BUS · 양방향')}
+      <rect x="56" y="116" width="134" height="168" rx="6" fill="${C.metal}" stroke="${C.cyan}"/>
+      <text x="123" y="196" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.cyan}">CPU</text>
+      <text x="123" y="216" text-anchor="middle" font-family="monospace" font-size="9" fill="${C.fnt}">(MDR)</text>
+      <rect x="410" y="116" width="134" height="168" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="477" y="205" text-anchor="middle" font-family="monospace" font-size="11" fill="${C.dim}">메모리</text>
+      ${[0,1,2,3,4,5,6,7].map(i => `<path d="M190 ${140+i*20} H404" stroke="${C.grn}" stroke-width="1.5"/><path d="M198 ${134+i*20} L190 ${140+i*20} L198 ${146+i*20} M396 ${134+i*20} L404 ${140+i*20} L396 ${146+i*20}" fill="none" stroke="${C.grn}" stroke-width="1.5"/>`).join('')}
+      ${flow('M194 180 H400', C.grn, 2, 1.6, 2.5)}
+      ${flow('M400 220 H194', C.grn, 2, 1.9, 2.5)}
+      <text x="300" y="316" text-anchor="middle" class="s-label" fill="${C.dim}">폭이 넓을수록 한 번에 더 많은 비트 — 8 / 16 / 32 / 64bit</text>
+    `),
+
+    /* ─── 제어 버스: 신호 ─── */
+    bus_ctrl: svg(`
+      ${lbl(40, 40, 'CONTROL BUS · 제어 신호')}
+      <rect x="56" y="116" width="120" height="184" rx="6" fill="${C.metal}" stroke="${C.cyan}"/>
+      <text x="116" y="214" text-anchor="middle" font-family="monospace" font-size="12" fill="${C.cyan}">CPU</text>
+      <rect x="448" y="116" width="96" height="184" rx="6" fill="${C.pan2}" stroke="${C.ln2}"/>
+      <text x="496" y="208" text-anchor="middle" font-family="monospace" font-size="10" fill="${C.dim}">메모리·장치</text>
+      ${[['READ', 1], ['WRITE', 1], ['CLK', 1], ['IRQ', -1]].map(([t, dir], i) => {
+        const y = 150 + i * 40;
+        const head = dir > 0 ? `<path d="M440 ${y-6} L448 ${y} L440 ${y+6}" fill="${C.cyan}"/>` : `<path d="M184 ${y-6} L176 ${y} L184 ${y+6}" fill="${C.gold}"/>`;
+        const col = dir > 0 ? C.cyan : C.gold;
+        return `<text x="180" y="${y-9}" font-family="monospace" font-size="10" fill="${col}">${t}</text>
+          <path d="M176 ${y} H448" stroke="${col}" stroke-width="1.5"/>${head}
+          ${flow(`M${dir>0?178:446} ${y} H${dir>0?446:178}`, col, 1, 1.8, 2.5)}`;
+      }).join('')}
+      <text x="300" y="320" text-anchor="middle" class="s-label" fill="${C.dim}">언제·어느 방향인지 신호로 조율 (읽기·쓰기·클럭·인터럽트)</text>
     `),
 
     /* ─── ROM·BIOS ─── */
